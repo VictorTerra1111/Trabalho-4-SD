@@ -55,6 +55,7 @@ module fpu(
                 exp_out <= expA;
                 if(mantA == mantB && sinalA == sinalB) begin
                     mant_out <= mantA + mantB; 
+                    sinal_out <= sinalA;
                 end else if (mantA < mantB) begin
                     mant_out <= mantB - mantA;
                     sinal_out <= sinalB; 
@@ -65,7 +66,7 @@ module fpu(
             end else begin
                 
             end 
-        
+            data_out <= {sinal_out, exp_out, mant_out};
         end
     end
 endmodule
