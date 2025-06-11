@@ -1,94 +1,144 @@
-module fpu(
-    input logic [31:0]op_A_in, 
-    input logic [31:0]op_B_in, 
-
-    input logic clock100KHz,
-    input logic reset,
-
-    output logic [31:0] data_out,
+module fpu( 
+    input logic [31:0] op_A_in, 
+    input logic [31:0] op_B_in,
+    input logic clock100KHz, 
+    input logic reset, 
+    output logic [31:0] data_out, 
     output logic [3:0] status_out
 );
-    
-    typedef enum logic {
-        EXACT,      // deu tudo certo
-        INEXACT,    // arredondou
-        OVERFLOW,   // passou do tamanho (62)
-        UNDERFLOW   // menor que o 1
-    } states_t; 
 
-    states_t status_out_cases;
+typedef enum logic [1:0] {
+    EXACT,
+    INEXACT,
+    OVERFLOW,
+    UNDERFLOW
+} status_t;
 
+typedef enum logic [2:0] {
+    IDLE,
+    ALIGN,
+    OPERATE,
+    NORMALIZE,
+    ROUND,
+    PACK
+} state_t;
 
-    typedef enum logic{
-        ATRIBUI,
-        EXP_E,
-        EXP_D
-    } internal_states
+state_t current_state, next_state;
+status_t status_reg;
 
-    internal_states states;
+logic [5:0] expA, expB, exp_result;
+logic [25:0] mantA, mantB;
+logic [26:0] mant_result_temp;
+logic [24:0] mant_result;
+logic sinalA, sinalB, sinal_result;
+logic [5:0] exp_diff;
+logic mantA_gt_mantB;
+logic [25:0] mantA_shifted, mantB_shifted;
 
-    logic [5:0] expA, expB, exp_out;
-    logic [24:0] mantA, mantB, mant_out;
-    logic sinal_out, sinalA, sinalB;
-    logic dif_casas;
+assign sinalA = op_A_in[31];
+assign expA   = op_A_in[30:25];
+assign mantA  = {1'b1, op_A_in[24:0]};
 
+assign sinalB = op_B_in[31];
+assign expB   = op_B_in[30:25];
+assign mantB  = {1'b1, op_B_in[24:0]};
 
-    assign data_out = {sinal_out, exp_out, mant_out};
-    assign expA = op_A_in[30:25];
-    assign expB = op_B_in[30:25]; 
-    assign mantA = op_A_in[24:0];
-    assign mantB = op_B_in[24:0]; 
-    assign sinalA = op_A_in[31];
-    assign sinalB = op_B_in[31]; 
-           
-    always @(posedge clock100KHz, negedge reset) begin
-        if(reset) begin
-            sinal_out <= 0;
-            sinalA <= 0;
-            sinalB <= 0;
-
-            expA <= 6'b0;
-            expB <= 6'b0;
-            exp_out <= 6'b0;
-            
-            mantA <= 25'b0;
-            mantB <= 25'b0;
-            mant_out <= 25'b0;
-            
-            status_out_cases <= EXACT;
-            data_out <= 32'b0;
-        end else begin
-            case(internal_states)
-                ATRIBUI: begin
-                    if(expA == expB) begin
-                        internal_states <= EXP_E;
-                    end else internal_states <= EXP_D;
-                end 
-                EXP_E: begin
-                        exp_out <= expA;
-                        if(sinalA == sinalB) begin
-                            sinal_out <= sinalA;
-                        end else begin
-                            if(sinalB < sinalA) begin
-                                mantB <= ~mantB + 1;
-                            end else if (sinalA < sinalB) begin
-                                mantA <= ~mantA + 1;
-                            end
-                        end
-                        mant_out <= mantA + mantB; 
-                end
-                EXP_D: begin
-                    // maior expoente possivel = exp
-                    if(expA < expB) begin 
-                        exp_ou <= expB - expA;
-                    end else begin
-                         exp_out <= expA - expB;
-                    end
-                    // logica
-                end
-                default: begin
-                end
-            endcase
+always_comb begin
+    case (current_state)
+        IDLE: begin
+            next_state = ALIGN;
         end
+        ALIGN: begin
+            next_state = OPERATE;
+        end
+        OPERATE: begin
+            next_state = NORMALIZE;
+        end
+        NORMALIZE: begin
+            next_state = ROUND;
+        end
+        ROUND: begin
+            next_state = PACK;
+        end
+        PACK: begin
+            next_state = IDLE;
+        end
+        default: next_state = IDLE;
+    endcase
+end
+
+always @(posedge clock100KHz or negedge reset) begin
+    if (!reset) begin
+        current_state <= IDLE;
+        data_out <= 32'b0;
+        status_out <= EXACT;
+    end else begin
+        current_state <= next_state;
+    end else begin
+    case (current_state)
+        ALIGN: begin
+            if (expA > expB) begin
+                exp_diff = expA - expB;
+                mantB_shifted = mantB >> exp_diff;
+                mantA_shifted = mantA;
+                exp_result = expA;
+            end else if (expB > expA) begin
+                exp_diff = expB - expA;
+                mantA_shifted = mantA >> exp_diff;
+                mantB_shifted = mantB;
+                exp_result = expB;
+            end else begin
+                mantA_shifted = mantA;
+                mantB_shifted = mantB;
+                exp_result = expA;
+            end
+        end
+
+        OPERATE: begin
+            if (sinalA == sinalB) begin
+                mant_result_temp = mantA_shifted + mantB_shifted;
+                sinal_result = sinalA;
+            end else begin
+                if (mantA_shifted >= mantB_shifted) begin
+                    mant_result_temp = mantA_shifted - mantB_shifted;
+                    sinal_result = sinalA;
+                end else begin
+                    mant_result_temp = mantB_shifted - mantA_shifted;
+                    sinal_result = sinalB;
+                end
+            end
+        end
+
+        NORMALIZE: begin
+            if (mant_result_temp[26]) begin
+                mant_result_temp = mant_result_temp >> 1;
+                exp_result = exp_result + 1;
+            end else begin
+                while (mant_result_temp[25] == 0 && exp_result > 0) begin
+                    mant_result_temp = mant_result_temp << 1;
+                    exp_result = exp_result - 1;
+                end
+            end
+            mant_result = mant_result_temp[24:0];
+        end
+
+        ROUND: begin
+            // arredondar
+            status_reg = EXACT;
+        end
+
+        PACK: begin
+            if (exp_result > 6'b111111) begin
+                status_reg = OVERFLOW;
+            end else if (exp_result == 0 && mant_result != 0) begin
+                status_reg = UNDERFLOW;
+            end
+            data_out = {sinal_result, exp_result, mant_result};
+            status_out = status_reg;
+        end
+        default: ;
+    endcase
     end
+end
+
 endmodule
