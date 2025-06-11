@@ -23,7 +23,7 @@ typedef enum logic [2:0] {
     PACK
 } state_t;
 
-state_t current_state, next_state;
+state_t current_state;
 status_t status_reg;
 
 logic [5:0] expA, expB, exp_result;
@@ -42,30 +42,6 @@ assign mantA  = {1'b1, op_A_in[24:0]};
 assign sinalB = op_B_in[31];
 assign expB   = op_B_in[30:25];
 assign mantB  = {1'b1, op_B_in[24:0]};
-
-always_comb begin
-    case (current_state)
-        IDLE: begin
-            next_state = ALIGN;
-        end
-        ALIGN: begin
-            next_state = OPERATE;
-        end
-        OPERATE: begin
-            next_state = NORMALIZE;
-        end
-        NORMALIZE: begin
-            next_state = ROUND;
-        end
-        ROUND: begin
-            next_state = PACK;
-        end
-        PACK: begin
-            next_state = IDLE;
-        end
-        default: next_state = IDLE;
-    endcase
-end
 
 always @(posedge clock100KHz or negedge reset) begin
     if (!reset) begin
