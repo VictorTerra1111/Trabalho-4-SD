@@ -1,17 +1,18 @@
 module fpu(
-    input logic [7:0]x_in,  // expoente
-    input logic [22:0]y_in, // mantica
+    input logic [31:0]op_a_in,  // expoente
+    input logic [31:0]op_b_in, // mantica
     input logic op,
-    input logic clock,
+    input logic clock100KHz,
     input logic reset,
 
-    output logic [31:0] w_out
+    output logic [31:0] status_out, 
+    output logic flags_out
 );
 
 
-    always @(posedge clock, negedge reset) begin
+    always @(posedge clock100KHz, negedge reset) begin
         if(reset) begin
-            w_out <= 0;
+            flags_out <= 0;
         end else begin
             // logica
         end
