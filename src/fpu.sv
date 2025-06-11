@@ -6,8 +6,7 @@ module fpu(
     input logic reset,
 
     output logic [31:0] data_out,
-    output logic [3:0] status_out, 
-    output logic flags_out
+    output logic [3:0] status_out
 );
     
     typedef enum logic {
@@ -23,9 +22,10 @@ module fpu(
     logic [24:0] mantA, mantB, mant_out;
     logic sinal_out, sinalA, sinalB;
 
+    assign data_out = {sinal_out, exp_out, mant_out};
+
     always @(posedge clock100KHz, negedge reset) begin
         if(reset) begin
-            flags_out <= 0;
             sinal_out <= 0;
             sinalA <= 0;
             sinalB <= 0;
@@ -66,7 +66,6 @@ module fpu(
             end else begin
                 
             end 
-            data_out <= {sinal_out, exp_out, mant_out};
         end
     end
 endmodule
