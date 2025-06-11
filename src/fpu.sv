@@ -16,22 +16,37 @@ module fpu(
         UNDERFLOW   // menor que o 1
     } states_t; 
 
-    states_t c_state;
+    states_t status_out_cases;
+
+
+    typedef enum logic{
+        ATRIBUI,
+        EXP_E,
+        EXP_D
+    } internal_states
+
+    internal_states states;
 
     logic [5:0] expA, expB, exp_out;
     logic [24:0] mantA, mantB, mant_out;
     logic sinal_out, sinalA, sinalB;
+    logic dif_casas;
+
 
     assign data_out = {sinal_out, exp_out, mant_out};
-
+    assign expA = op_A_in[30:25];
+    assign expB = op_B_in[30:25]; 
+    assign mantA = op_A_in[24:0];
+    assign mantB = op_B_in[24:0]; 
+    assign sinalA = op_A_in[31];
+    assign sinalB = op_B_in[31]; 
+           
     always @(posedge clock100KHz, negedge reset) begin
         if(reset) begin
             sinal_out <= 0;
             sinalA <= 0;
             sinalB <= 0;
 
-            status_out <= 4'b0;
-            
             expA <= 6'b0;
             expB <= 6'b0;
             exp_out <= 6'b0;
@@ -39,33 +54,41 @@ module fpu(
             mantA <= 25'b0;
             mantB <= 25'b0;
             mant_out <= 25'b0;
-           
-           data_out <= 32'b0;
+            
+            status_out_cases <= EXACT;
+            data_out <= 32'b0;
         end else begin
-            expA <= op_A_in[30:25];
-            expB <= op_B_in[30:25]; 
-
-            mantA <= op_A_in[24:0];
-            mantB <= op_B_in[24:0]; 
-
-            sinalA <= op_A_in[31];
-            sinalB <= op_B_in[31]; 
-
-            if(expA == expB) begin
-                exp_out <= expA;
-                if(mantA == mantB && sinalA == sinalB) begin
-                    mant_out <= mantA + mantB; 
-                    sinal_out <= sinalA;
-                end else if (mantA < mantB) begin
-                    mant_out <= mantB - mantA;
-                    sinal_out <= sinalB; 
-                end else if (mantB < mantA) begin
-                    mant_out <= mantA - mantB; 
-                    sinal_out <= sinalA;
+            case(internal_states)
+                ATRIBUI: begin
+                    if(expA == expB) begin
+                        internal_states <= EXP_E;
+                    end else internal_states <= EXP_D;
+                end 
+                EXP_E: begin
+                        exp_out <= expA;
+                        if(sinalA == sinalB) begin
+                            sinal_out <= sinalA;
+                        end else begin
+                            if(sinalB < sinalA) begin
+                                mantB <= ~mantB + 1;
+                            end else if (sinalA < sinalB) begin
+                                mantA <= ~mantA + 1;
+                            end
+                        end
+                        mant_out <= mantA + mantB; 
                 end
-            end else begin
-                
-            end 
+                EXP_D: begin
+                    // maior expoente possivel = exp
+                    if(expA < expB) begin 
+                        exp_ou <= expB - expA;
+                    end else begin
+                         exp_out <= expA - expB;
+                    end
+                    // logica
+                end
+                default: begin
+                end
+            endcase
         end
     end
 endmodule
