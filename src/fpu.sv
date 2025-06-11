@@ -11,7 +11,6 @@ typedef enum logic [1:0] { EXACT, INEXACT, OVERFLOW, UNDERFLOW } status_t;
 typedef enum logic [2:0] { MOD_EXPO, OPERACAO, AR_EXPO, ARREDONDA, PARA_STATUS } state_t;
 
 state_t current_state;
-status_t status_reg;
 
 logic [5:0] expA, expB, exp_result, exp_diff;
 logic [25:0] mantA, mantB, mantA_shifted, mantB_shifted;
@@ -19,6 +18,7 @@ logic [26:0] mant_result_temp;
 logic [24:0] mant_result;
 logic sinalA, sinalB, sinal_result;
 logic mantA_gt_mantB;
+logic arredondou;
 
 assign sinalA = op_A_in[31];
 assign expA   = op_A_in[30:25];
@@ -33,7 +33,6 @@ always @(posedge clock100KHz or negedge reset) begin
         current_state      <= MOD_EXPO;
         data_out           <= 32'b0;
         status_out         <= EXACT;
-        status_reg         <= EXACT;
         exp_result         <= 6'b0;
         mantA_shifted      <= 26'b0;
         mantB_shifted      <= 26'b0;
@@ -41,9 +40,11 @@ always @(posedge clock100KHz or negedge reset) begin
         mant_result        <= 25'b0;
         sinal_result       <= 1'b0;
         exp_diff           <= 6'b0;
+        arredondou         <= 1'b0;
     end else begin
         case (current_state)
             MOD_EXPO: begin
+                arredondou <= 1'b0;  // reset sinal de arredondamento
                 if (expA > expB) begin
                     exp_diff         <= expA - expB;
                     mantB_shifted    <= mantB >> exp_diff;
@@ -95,25 +96,29 @@ always @(posedge clock100KHz or negedge reset) begin
             ARREDONDA: begin
                 if (mant_result_temp[0]) begin
                     mant_result <= mant_result + 1;
+                    arredondou  <= 1'b1;
+
                     if ((mant_result + 1) == 25'b1000000000000000000000000) begin
                         mant_result <= (mant_result + 1) >> 1;
                         exp_result  <= exp_result + 1;
                     end
-                    status_reg <= INEXACT;
                 end else begin
-                    status_reg <= EXACT;
+                    arredondou <= 1'b0;
                 end
                 current_state <= PARA_STATUS;
             end
 
             PARA_STATUS: begin
+                data_out   <= {sinal_result, exp_result, mant_result};
                 if (exp_result > 6'b111111) begin
-                    status_reg <= OVERFLOW;
+                    status_out <= OVERFLOW;
                 end else if (exp_result == 0 && mant_result != 0) begin
-                    status_reg <= UNDERFLOW;
+                    status_out <= UNDERFLOW;
+                end else if (arredondou) begin
+                    status_out <= INEXACT;
+                end else begin
+                    status_out <= EXACT;
                 end
-                data_out      <= {sinal_result, exp_result, mant_result};
-                status_out    <= status_reg;
                 current_state <= MOD_EXPO;
             end
 
