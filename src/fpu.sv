@@ -68,6 +68,7 @@ always @(posedge clock100KHz or negedge reset) begin
                     mantB_shifted = mantB;
                     exp_result = expA;
                 end
+                current_state <= OPERATE;
             end
     
             OPERATE: begin
