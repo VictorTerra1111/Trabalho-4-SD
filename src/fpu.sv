@@ -18,11 +18,12 @@ Y = 32 - X.
 24103806-6 
 somatório: 31 mod 4 = 3
 X = 8 - 3 = 5 expoente
-Y = 32 - 2 = 27 mantissa
+Y = 32 - 5 = 27 mantissa VERIFICAR TALVEZ 26
 
-1 - sinal
-5 - expoente 
-27 - mantissa
+[1][00000][00000000...] 
+1 - sinal (31)
+5 - expoente (30-26)
+27 - mantissa (0-25)
 
 */
     typedef enum logic {
@@ -34,10 +35,26 @@ Y = 32 - 2 = 27 mantissa
 
     states_t c_state;
 
+    logic [4:0] exp1, exp2, exp_out;
+    logic [26:0] mant1, mant2, mant_out;
+    
     always @(posedge clock100KHz, negedge reset) begin
         if(reset) begin
             flags_out <= 0;
         end else begin
+            exp1 <= op_a_in[30:26];
+            exp2 <= op_b_in[30:26]; 
+
+            mant1 <= op_a_in[25:0];
+            mant2 <= op_b_in[25:0]; 
+
+            if(exp1 > exp2) begin 
+                exp_out <= exp2;
+            end 
+            else if(exp1 =< exp2) begin
+                exp_out <= exp1;
+            end
+            
             case c_state
                 EXACT: 
                 INEXACT: 
