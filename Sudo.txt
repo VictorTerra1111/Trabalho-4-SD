@@ -1,0 +1,119 @@
+// ==============================
+// DEFINIÇÕES INICIAIS
+// ------------------------------
+// Entrada: op_A[31:0], op_B[31:0]
+//   Bits: 31       → Sinal (0: positivo, 1: negativo)
+//         30-25    → Expoente (6 bits)
+//         24-0     → Mantissa (25 bits, sem o bit implícito 1)
+// Observação: Para operações, adiciona-se o bit implícito '1' para números normalizados.
+// Saída: data_out[31:0] formada por {sinal_result, exp_result, mant_result[24:0]}
+//         status_out: código de status (EXACT, INEXACT, OVERFLOW, UNDERFLOW)
+
+// ==============================
+// PASSO 1 - EXTRAÇÃO DOS CAMPOS
+// ------------------------------
+sinalA  ← op_A[31]
+expA    ← op_A[30:25]
+mantA_original ← op_A[24:0]
+// Adiciona bit implícito na posição mais alta (ex: posição 24, formando um vetor de 25+1 = 26 bits internamente)
+mantA  ← {1'b1, mantA_original}
+
+sinalB  ← op_B[31]
+expB    ← op_B[30:25]
+mantB_original ← op_B[24:0]
+mantB  ← {1'b1, mantB_original}
+
+// ==============================
+// PASSO 2 - ALINHAMENTO DAS MANTISSAS
+// ------------------------------
+dif_exp ← expA - expB
+
+SE (dif_exp > 0) ENTÃO:
+    // opA tem expoente maior: desloca mantissa de B à direita
+    mantB ← shift_right(mantB, dif_exp)
+    exp_result ← expA
+SENÃO SE (dif_exp < 0) ENTÃO:
+    // opB tem expoente maior: desloca mantissa de A à direita
+    mantA ← shift_right(mantA, ABS(dif_exp))
+    exp_result ← expB
+SENÃO:
+    // Expoentes iguais: não é necessário alinhar
+    exp_result ← expA
+
+// ==============================
+// PASSO 3 - EXECUÇÃO DA OPERAÇÃO (SOMA / SUBTRAÇÃO)
+// ------------------------------
+// Aqui a operação depende dos sinais:
+// Se os sinais forem iguais, faz soma;
+// Se os sinais forem diferentes, efetua subtração (a subtração real é feita por meio da diferença entre as magnitudes)
+SE (sinalA == sinalB) ENTÃO:
+    mant_result_temp ← mantA + mantB
+    sinal_result ← sinalA
+SENÃO:
+    // Subtração: determina qual mantissa é maior para manter o sinal da magnitude maior
+    SE (mantA >= mantB) ENTÃO:
+         mant_result_temp ← mantA - mantB
+         sinal_result ← sinalA
+    SENÃO:
+         mant_result_temp ← mantB - mantA
+         sinal_result ← sinalB
+FIM_SE
+
+// ==============================
+// PASSO 4 - NORMALIZAÇÃO DO RESULTADO
+// ------------------------------
+// OBS.: Se o resultado for zero, o estado deve ser tratado separadamente.
+SE (mant_result_temp == 0) ENTÃO:
+    // Resultado zero: define expoente e sinal como zero (por exemplo, +0)
+    exp_result ← 0
+    sinal_result ← 0
+    mant_result ← 0
+    IR PARA Montar_Saida
+FIM_SE
+
+// 4a. Verifica se houve overflow na soma (carry-out na posição extra)
+// Se a soma gerou um bit extra (por exemplo, se o vetor de mantissas era de 26 bits e passou a ter 27 bits)
+// Nesse caso, o bit extra (MSB) indica que devemos deslocar para a direita e incrementar o expoente.
+SE (mant_result_temp possui 1 no bit [26]) ENTÃO:
+    mant_result_temp ← shift_right(mant_result_temp, 1)
+    exp_result ← exp_result + 1
+FIM_SE
+
+// 4b. Normaliza à esquerda (quando o bit mais significativo não está na posição esperada)
+// Enquanto o bit esperado (posição de bit implícito) for 0 e houver possibilidade de reduzir o expoente:
+ENQUANTO (mant_result_temp[?] != 1 AND exp_result > 0) FAÇA:
+    // "?" indica a posição que deve ser 1 no formato normalizado (por exemplo, se a mantissa final tem 25 bits, certifique-se de que o bit 24 seja 1)
+    mant_result_temp ← shift_left(mant_result_temp, 1)
+    exp_result ← exp_result - 1
+FIM_ENQUANTO
+
+// Após normalização, selecione os 25 bits da mantissa conforme o formato de saída
+mant_result ← extrair_bits(mant_result_temp, quantidade = 25)
+
+// ==============================
+// PASSO 5 - ARREDONDAMENTO (OPCIONAL)
+// ------------------------------
+// Se for utilizado arredondamento (por exemplo, round-to-nearest), verificar os bits descartados.
+// Se ocorrer arredondamento:
+//     Ajustar mant_result (e possivelmente exp_result) e marcar status como INEXACT.
+// (Implementação pode variar conforme o método escolhido)
+
+// ==============================
+// PASSO 6 - VERIFICAÇÃO DE CONDIÇÕES ESPECIAIS
+// ------------------------------
+SE (exp_result > expoente_maximo) ENTÃO:
+    status ← OVERFLOW
+SENÃO SE (exp_result == 0) ENTÃO:
+    // Se após normalização o expoente é zero e o resultado não é exatamente zero, é UNDERFLOW
+    status ← UNDERFLOW
+SENÃO:
+    // Se ocorreu arredondamento durante a normalização ou arredondamento
+    SE (arredondamento_ocorreu) ENTÃO:
+         status ← INEXACT
+    SENÃO:
+         status ← EXACT
+FIM_SE
+
+Montar_Saida:
+data_out ← {sinal_result, exp_result, mant_result}
+status_out ← status
