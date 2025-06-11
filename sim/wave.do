@@ -1,10 +1,12 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate tb/clock
+add wave -noupdate tb/clock100KHz
 add wave -noupdate tb/reset
-add wave -noupdate tb/x_in
-add wave -noupdate tb/y_in
-add wave -noupdate tb/w_out
+add wave -noupdate tb/op_A_in
+add wave -noupdate tb/op_B_in
+add wave -noupdate tb/data_out
+add wave -noupdate tb/status_out
+add wave -noupdate tb/flags_out
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {377768 ns} 0}
 quietly wave cursor active 1
