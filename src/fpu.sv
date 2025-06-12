@@ -14,6 +14,10 @@ exp_result >= 63
 sinal caso resultado seja 0,0
 estudar porque existe +0,0 e -0,0 
 
+maior expoente: -31
+menor expoente: 32
+
+bias: 31 
 
 */
 typedef enum logic [1:0] { EXACT, INEXACT, OVERFLOW, UNDERFLOW } status_t;
