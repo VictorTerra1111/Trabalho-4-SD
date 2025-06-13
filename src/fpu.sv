@@ -137,14 +137,11 @@ module fpu(
                     
                         if (exp_result > 6'd63) begin
                             send_status <= send_status | OVERFLOW;
-                        end
-                        if (exp_result == 6'd0 && mant_result != 25'd0) begin
+                        end else if (exp_result == 6'd0 && mant_result != 25'd0) begin
                             send_status <= send_status | UNDERFLOW;
-                        end
-                        if (arredondou) begin
+                        end else if (arredondou) begin
                             send_status <= send_status | INEXACT;
-                        end
-                        if (send_status == 4'b0000) begin
+                        end else if (send_status == 4'b0000) begin
                             send_status <= EXACT;
                         end
                     end
