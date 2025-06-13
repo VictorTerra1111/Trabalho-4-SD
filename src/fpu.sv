@@ -46,6 +46,8 @@ assign sinalB = op_B_in[31];
 assign expB = op_B_in[30:25];
 assign mantB = {1'b1, op_B_in[24:0]};
 
+data_out = {sinal_result, exp_result, mant_result};
+
 always @(posedge clock100KHz or negedge reset) begin
     if (!reset) begin
         current_state <= MOD_EXPO;
@@ -104,7 +106,7 @@ always @(posedge clock100KHz or negedge reset) begin
                 end else begin
                     while (mant_result_temp[25] == 0 && exp_result > 0) begin
                         mant_result_temp <= mant_result_temp << 1;
-                        exp_result       <= exp_result - 1;
+                        exp_result <= exp_result - 1;
                     end
                 end
                 mant_result <= mant_result_temp[24:0];
@@ -127,7 +129,6 @@ always @(posedge clock100KHz or negedge reset) begin
             end
 
             PARA_STATUS: begin
-                data_out <= {sinal_result, exp_result, mant_result};
                 if (exp_result > 63) begin
                     send_status <= OVERFLOW;
                 end else if (exp_result == 0 && mant_result != 0) begin
