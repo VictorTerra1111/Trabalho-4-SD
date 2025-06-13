@@ -8,7 +8,7 @@ module fpu(
 );
 
 /*
-exp_result <= 6'b111111 ? 
+exp_result <= 6'b111111 ? OK
 exp_result >= 63 
 
 sinal caso resultado seja 0,0
@@ -20,17 +20,21 @@ menor expoente: 32
 bias: 31 
 */
 
-typedef enum logic [1:0] { EXACT, INEXACT, OVERFLOW, UNDERFLOW } status_t;
+typedef enum logic [1:0] { EXACT, INEXACT, OVERFLOW, UNDERFLOW } status_out_t;
 typedef enum logic [2:0] { MOD_EXPO, OPERACAO, AR_EXPO, ARREDONDA, PARA_STATUS } state_t;
 
 state_t current_state;
 
 logic [5:0] expA, expB;
-logic [5:0] exp_result, exp_diff;
+logic [5:0] exp_result, exp_dif;
+
 logic [24:0] mant_result;
+
 logic [25:0] mantA, mantB;
 logic [25:0] mantA_shifted, mantB_shifted;
+
 logic [26:0] mant_result_temp;
+
 logic sinalA, sinalB, sinal_result;
 logic mantA_gt_mantB;
 logic arredondou;
@@ -46,10 +50,10 @@ assign mantB = {1'b1, op_B_in[24:0]};
 always @(posedge clock100KHz or negedge reset) begin
     if (!reset) begin
         current_state <= MOD_EXPO;
-        status_out <= EXACT;
+        status_out_t <= EXACT;
         arredondou <= 1'b0;
         sinal_result <= 1'b0;
-        exp_diff <= 6'b0;
+        exp_dif <= 6'b0;
         exp_result <= 6'b0;
         mant_result <= 25'b0;
         mantA_shifted <= 26'b0;
@@ -61,13 +65,13 @@ always @(posedge clock100KHz or negedge reset) begin
             MOD_EXPO: begin
                 arredondou <= 1'b0; 
                 if (expA > expB) begin
-                    exp_diff <= expA - expB;
-                    mantB_shifted <= mantB >> exp_diff;
+                    exp_dif <= expA - expB;
+                    mantB_shifted <= mantB >> exp_dif;
                     mantA_shifted <= mantA;
                     exp_result <= expA;
                 end else if (expB > expA) begin
-                    exp_diff <= expB - expA;
-                    mantA_shifted <= mantA >> exp_diff;
+                    exp_dif <= expB - expA;
+                    mantA_shifted <= mantA >> exp_dif;
                     mantB_shifted <= mantB;
                     exp_result <= expB;
                 end else begin
@@ -125,14 +129,14 @@ always @(posedge clock100KHz or negedge reset) begin
 
             PARA_STATUS: begin
                 data_out   <= {sinal_result, exp_result, mant_result};
-                if (exp_result > 6'b111111) begin
-                    status_out <= OVERFLOW;
+                if (exp_result > 63) begin
+                    status_out_t <= OVERFLOW;
                 end else if (exp_result == 0 && mant_result != 0) begin
-                    status_out <= UNDERFLOW;
+                    status_out_t <= UNDERFLOW;
                 end else if (arredondou) begin
-                    status_out <= INEXACT;
+                    status_out_t <= INEXACT;
                 end else begin
-                    status_out <= EXACT;
+                    status_out_t <= EXACT;
                 end
                 current_state <= MOD_EXPO;
             end
