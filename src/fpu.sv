@@ -56,7 +56,6 @@ module fpu(
         end else begin
             case (current_state)
                 MOD_EXPO: begin
-                    arredondou <= 1'b0;
                     if (expA > expB) begin
                         exp_dif <= expA - expB;
                         mantB_shifted <= (exp_dif > 6'd26) ? 26'b0 : mantB >> exp_dif;
