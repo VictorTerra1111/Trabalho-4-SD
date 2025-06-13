@@ -128,21 +128,26 @@ module fpu(
 
                 PARA_STATUS: begin
                     data_out <= {sinal_result, exp_result, mant_result};
-                    send_status <= EXACT;
-
+                    send_status <= 4'b0;
+                    
                     if (mant_result == 25'd0 && exp_result == 6'd0) begin
                         data_out <= 32'b0;
                         send_status <= EXACT;
-                    end 
-                    else if (exp_result > 6'd63) begin
-                        data_out <= 32'b0;
-                        send_status <= OVERFLOW;
-                    end 
-                    else if (exp_result == 6'd0 && mant_result != 25'd0) begin
-                        send_status <= UNDERFLOW;
-                    end 
-                    else if (arredondou) begin
-                        send_status <= INEXACT;
+                    end else begin
+                        data_out <= {sinal_result, exp_result, mant_result};
+                    
+                        if (exp_result > 6'd63) begin
+                            send_status = send_status | OVERFLOW;
+                        end
+                        if (exp_result == 6'd0 && mant_result != 25'd0) begin
+                            send_status = send_status | UNDERFLOW;
+                        end
+                        if (arredondou) begin
+                            send_status = send_status | INEXACT;
+                        end
+                        if (send_status == 4'b0000) begin
+                            send_status = EXACT;
+                        end
                     end
 
                     status_out <= send_status;
