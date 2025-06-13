@@ -1,153 +1,76 @@
-module fpu( 
-    input logic [31:0] op_A_in, 
-    input logic [31:0] op_B_in,
-    input logic clock100KHz, 
-    input logic reset, 
-    output logic [31:0] data_out, 
-    output logic [3:0] status_out
-);
+`timescale 1ns/1ps
 
-    typedef enum logic [3:0] { 
-        EXACT     = 4'b0001,
-        INEXACT   = 4'b0010, 
-        OVERFLOW  = 4'b0100, 
-        UNDERFLOW = 4'b1000
-    } status_out_t;
+module tb;
 
-    typedef enum logic [2:0] {
-        MOD_EXPO, OPERACAO, AR_EXPO, ARREDONDA, PARA_STATUS
-    } state_t;
+    logic [31:0] op_A_in; 
+    logic [31:0] op_B_in; 
+    logic clock100KHz;
+    logic reset;
+    logic [31:0] data_out;
+    logic [3:0] status_out; 
 
-    state_t current_state;
-    status_out_t send_status;
+    fpu dut (
+        .op_A_in(op_A_in), 
+        .op_B_in(op_B_in), 
+        .clock100KHz(clock100KHz),
+        .reset(reset),
+        .data_out(data_out),
+        .status_out(status_out) 
+    );
 
-    logic [5:0] expA, expB, exp_result, exp_dif;
-    logic [24:0] mant_result;
-    logic [25:0] mantA, mantB, mantA_shifted, mantB_shifted;
-    logic [26:0] mant_result_temp;
-    logic sinalA, sinalB, sinal_result;
-    logic arredondou;
+    initial clock100KHz = 0;
+    always #5 clock100KHz = ~clock100KHz;
 
-    assign sinalA = op_A_in[31];
-    assign expA   = op_A_in[30:25];
-    assign mantA  = {1'b1, op_A_in[24:0]};
-
-    assign sinalB = op_B_in[31];
-    assign expB   = op_B_in[30:25];
-    assign mantB  = {1'b1, op_B_in[24:0]};
-
-    always @(posedge clock100KHz or negedge reset) begin
-        if (!reset) begin
-            current_state     <= MOD_EXPO;
-            send_status       <= EXACT;
-            arredondou        <= 1'b0;
-            sinal_result      <= 1'b0;
-            exp_dif           <= 6'b0;
-            exp_result        <= 6'b0;
-            mant_result       <= 25'b0;
-            mantA_shifted     <= 26'b0;
-            mantB_shifted     <= 26'b0;
-            mant_result_temp  <= 27'b0;
-            data_out          <= 32'b0;
-            status_out        <= 4'b0000;
-        end else begin
-            case (current_state)
-                MOD_EXPO: begin
-                    arredondou <= 1'b0;
-                    if (expA > expB) begin
-                        exp_dif <= expA - expB;
-                        mantB_shifted <= (exp_dif > 6'd26) ? 26'b0 : mantB >> exp_dif;
-                        mantA_shifted <= mantA;
-                        exp_result    <= expA;
-                    end else if (expB > expA) begin
-                        exp_dif <= expB - expA;
-                        mantA_shifted <= (exp_dif > 6'd26) ? 26'b0 : mantA >> exp_dif;
-                        mantB_shifted <= mantB;
-                        exp_result    <= expB;
-                    end else begin
-                        mantA_shifted <= mantA;
-                        mantB_shifted <= mantB;
-                        exp_result    <= expA;
-                    end
-                    current_state <= OPERACAO;
-                end
-
-                OPERACAO: begin
-                    if (sinalA == sinalB) begin
-                        mant_result_temp <= mantA_shifted + mantB_shifted;
-                        sinal_result     <= sinalA;
-                    end else begin
-                        if (mantA_shifted >= mantB_shifted) begin
-                            mant_result_temp <= mantA_shifted - mantB_shifted;
-                            sinal_result     <= sinalA;
-                        end else begin
-                            mant_result_temp <= mantB_shifted - mantA_shifted;
-                            sinal_result     <= sinalB;
-                        end
-                    end
-                    current_state <= AR_EXPO;
-                end
-
-                AR_EXPO: begin
-                    if (mant_result_temp[26]) begin
-                        mant_result_temp <= mant_result_temp >> 1;
-                        exp_result <= exp_result + 1;
-                        current_state <= AR_EXPO; 
-                    end else if (mant_result_temp[25] == 0 && exp_result > 0) begin
-                        mant_result_temp <= mant_result_temp << 1;
-                        exp_result <= exp_result - 1;
-                        current_state <= AR_EXPO;
-                    end else begin
-                        mant_result <= mant_result_temp[24:0];  // fatia os 25 bits significativos
-                        current_state <= ARREDONDA;
-                    end
-                end
-
-
-                ARREDONDA: begin
-                    logic [24:0] mant_temp = mant_result;
-                    if (mant_result_temp[0]) begin
-                        mant_temp = mant_result + 1;
-                        arredondou <= 1'b1;
-
-                        if (mant_temp == 25'b1000000000000000000000000) begin
-                            mant_result <= mant_temp >> 1;
-                            exp_result  <= exp_result + 1;
-                        end else begin
-                            mant_result <= mant_temp;
-                        end
-                    end else begin
-                        arredondou <= 1'b0;
-                        mant_result <= mant_result;
-                    end
-                    current_state <= PARA_STATUS;
-                end
-
-                PARA_STATUS: begin
-                    if (mant_result == 0 && exp_result == 0) begin
-                        data_out <= 32'b0;
-                    end else begin
-                        data_out <= {sinal_result, exp_result, mant_result};
-                    end
-
-                    if (exp_result > 6'd63) begin
-                        send_status <= OVERFLOW;
-                        data_out <= 32'b0; 
-                    end else if (exp_result == 0 && mant_result != 0) begin
-                        send_status <= UNDERFLOW;
-                    end else if (arredondou) begin
-                        send_status <= INEXACT;
-                    end else begin
-                        send_status <= EXACT;
-                    end
-
-                    status_out <= send_status;
-                    current_state <= MOD_EXPO;
-                end
-
-                default: current_state <= MOD_EXPO;
-            endcase
+    task automatic apply_inputs(
+        input [31:0] A,
+        input [31:0] B,
+        input string label
+    );
+        begin
+            op_A_in <= A;
+            op_B_in <= B;
+            $display(">>> TESTE: %s", label);
+            #1000;  
+            $display("A: %b", A);
+            $display("B: %b", B);
+            $display("Saída: %b", data_out);
+            $display("Status: %b\n", status_out);
         end
-    end
+    endtask
 
+    initial begin
+        reset = 1;
+        op_A_in = 32'b0;
+        op_B_in = 32'b0;
+        #20;
+        reset = 0;
+        #100;
+        reset = 1;
+        #50;
+        // Formato: {sinal, expoente[6], mantissa[25]}
+
+        apply_inputs(32'b00000000000000000000000000000000, 32'b00000000000000000000000000000000, "ZERO + ZERO");
+
+        apply_inputs({1'b0, 6'd31, 25'd0}, {1'b0, 6'd31, 25'd0}, "+1 + +1");
+
+        apply_inputs({1'b0, 6'd31, 25'd0}, {1'b1, 6'd31, 25'd0}, "+1 + -1");
+
+        apply_inputs({1'b0, 6'd50, 25'd100}, {1'b0, 6'd10, 25'd100}, "Expoentes muito diferentes");
+
+        apply_inputs({1'b0, 6'd31, 25'd5000000}, {1'b0, 6'd31, 25'd1000000}, "Normalização à esquerda");
+
+        apply_inputs({1'b0, 6'd31, 25'b0111111111111111111111111}, {1'b0, 6'd31, 25'b0000000000000000000000001}, "Arredondamento");
+
+        apply_inputs({1'b0, 6'd63, 25'b1111111111111111111111111}, {1'b0, 6'd63, 25'b1111111111111111111111111}, "Overflow");
+
+        apply_inputs({1'b0, 6'd1, 25'd1}, {1'b1, 6'd1, 25'd0}, "Underflow");
+
+        apply_inputs({1'b1, 6'd32, 25'd0}, {1'b1, 6'd32, 25'd0}, "-2 + -2");
+
+        apply_inputs({1'b0, 6'd33, 25'd0}, {1'b1, 6'd32, 25'd0}, "+4 - (+2)");
+
+        #1000;
+        $display("Testbench finalizado.");
+        $finish;
+    end
 endmodule
