@@ -49,7 +49,7 @@ assign mantB = {1'b1, op_B_in[24:0]};
 always @(posedge clock100KHz or negedge reset) begin
     if (!reset) begin
         current_state <= MOD_EXPO;
-        send_state <= EXACT;
+        send_status <= EXACT;
         arredondou <= 1'b0;
         sinal_result <= 1'b0;
         exp_dif <= 6'b0;
