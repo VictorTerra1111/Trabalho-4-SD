@@ -106,10 +106,10 @@ module fpu(
                 end
 
                 ARREDONDA: begin
-                    mant_temp = mant_result;
+                    mant_temp <= mant_result;
 
                     if (mant_result_temp[0]) begin
-                        mant_temp = mant_result + 1;
+                        mant_temp <= mant_result + 1;
                         arredondou <= 1'b1;
 
                         if (mant_temp == 25'b1000000000000000000000000) begin
@@ -136,16 +136,16 @@ module fpu(
                         data_out <= {sinal_result, exp_result, mant_result};
                     
                         if (exp_result > 6'd63) begin
-                            send_status = send_status | OVERFLOW;
+                            send_status <= send_status | OVERFLOW;
                         end
                         if (exp_result == 6'd0 && mant_result != 25'd0) begin
-                            send_status = send_status | UNDERFLOW;
+                            send_status <= send_status | UNDERFLOW;
                         end
                         if (arredondou) begin
-                            send_status = send_status | INEXACT;
+                            send_status <= send_status | INEXACT;
                         end
                         if (send_status == 4'b0000) begin
-                            send_status = EXACT;
+                            send_status <= EXACT;
                         end
                     end
 
