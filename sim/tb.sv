@@ -1,4 +1,4 @@
-`timescale 1us/1ns
+`timescale 1ns/1ps
 
 module tb_fpu;
     logic [31:0]op_A_in; 
