@@ -20,8 +20,8 @@ menor expoente: 32
 bias: 31 
 */
 
-typedef enum logic [1:0] { EXACT, INEXACT, OVERFLOW, UNDERFLOW } status_out_t;
-typedef enum logic [2:0] { MOD_EXPO, OPERACAO, AR_EXPO, ARREDONDA, PARA_STATUS } state_t;
+typedef enum logic { EXACT, INEXACT, OVERFLOW, UNDERFLOW } status_out_t;
+typedef enum logic { MOD_EXPO, OPERACAO, AR_EXPO, ARREDONDA, PARA_STATUS } state_t;
 
 state_t current_state;
 
@@ -100,15 +100,15 @@ always @(posedge clock100KHz or negedge reset) begin
             AR_EXPO: begin
                 if (mant_result_temp[26]) begin
                     mant_result_temp <= mant_result_temp >> 1;
-                    exp_result       <= exp_result + 1;
+                    exp_result <= exp_result + 1;
                 end else begin
                     while (mant_result_temp[25] == 0 && exp_result > 0) begin
                         mant_result_temp <= mant_result_temp << 1;
                         exp_result       <= exp_result - 1;
                     end
                 end
-                mant_result    <= mant_result_temp[24:0];
-                current_state  <= ARREDONDA;
+                mant_result <= mant_result_temp[24:0];
+                current_state <= ARREDONDA;
             end
 
             ARREDONDA: begin
@@ -127,7 +127,7 @@ always @(posedge clock100KHz or negedge reset) begin
             end
 
             PARA_STATUS: begin
-                data_out   <= {sinal_result, exp_result, mant_result};
+                data_out <= {sinal_result, exp_result, mant_result};
                 if (exp_result > 63) begin
                     status_out_t <= OVERFLOW;
                 end else if (exp_result == 0 && mant_result != 0) begin
