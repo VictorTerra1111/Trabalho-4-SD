@@ -42,9 +42,9 @@ module tb;
         reset = 0;
         op_A_in = 32'b0;
         op_B_in = 32'b0;
-        #10;
+        #20;
         reset = 1;
-        #10;
+        #100;
         reset = 0;
         #50;
         // Formato: {sinal, expoente[6], mantissa[25]}
