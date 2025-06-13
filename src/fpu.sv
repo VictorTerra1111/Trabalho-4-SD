@@ -128,9 +128,9 @@ always @(posedge clock100KHz or negedge reset) begin
 
             PARA_STATUS: begin
                 data_out <= {sinal_result, exp_result, mant_result};
-                if (exp_result > 63) begin
+                if (exp_result > 6'd63) begin
                     send_status <= OVERFLOW;
-                end else if (exp_result == 0 && mant_result != 0) begin
+                end else if (exp_result ==6'd0 && mant_result != 6'd0) begin
                     send_status <= UNDERFLOW;
                 end else if (arredondou) begin
                     send_status <= INEXACT;
