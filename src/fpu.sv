@@ -56,6 +56,7 @@ module fpu(
         end else begin
             case (current_state)
                 MOD_EXPO: begin
+                   // arredondou <= 1'b0;
                     if (expA > expB) begin
                         exp_dif <= expA - expB;
                         mantB_shifted <= (exp_dif > 6'd26) ? 26'b0 : mantB >> exp_dif;
@@ -109,7 +110,7 @@ module fpu(
                     mant_temp <= mant_result;
 
                     if (mant_result_temp[0]) begin
-                        mant_temp <= mant_result + 1;
+                        mant_temp = mant_result + 1;
                         arredondou <= 1'b1;
 
                         if (mant_temp == 25'b1000000000000000000000000) begin
@@ -137,11 +138,14 @@ module fpu(
                     
                         if (exp_result > 6'd63) begin
                             send_status <= send_status | OVERFLOW;
-                        end else if (exp_result == 6'd0 && mant_result != 25'd0) begin
+                        end
+                        if (exp_result == 6'd0 && mant_result != 25'd0) begin
                             send_status <= send_status | UNDERFLOW;
-                        end else if (arredondou) begin
+                        end
+                        if (arredondou) begin
                             send_status <= send_status | INEXACT;
-                        end else if (send_status == 4'b0000) begin
+                        end
+                        if (send_status == 4'b0) begin
                             send_status <= EXACT;
                         end
                     end
