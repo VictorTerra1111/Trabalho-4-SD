@@ -138,6 +138,7 @@ always @(posedge clock100KHz or negedge reset) begin
                     send_status <= EXACT;
                 end
                 current_state <= MOD_EXPO;
+                status_out <= send_status;
             end
 
             default: current_state <= MOD_EXPO;
