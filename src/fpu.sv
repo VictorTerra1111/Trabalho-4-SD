@@ -8,15 +8,11 @@ module fpu(
 );
 
 /*
-exp_result <= 6'b111111 ? OK
-exp_result >= 63 
-
 sinal caso resultado seja 0,0
 estudar porque existe +0,0 e -0,0 
 
 maior expoente: -31 colocar constantes 
 menor expoente: 32
-
 bias: 31 
 */
 
