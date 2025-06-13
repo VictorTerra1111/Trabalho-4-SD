@@ -19,15 +19,18 @@ menor expoente: 32
 
 bias: 31 
 */
+
 typedef enum logic [1:0] { EXACT, INEXACT, OVERFLOW, UNDERFLOW } status_t;
 typedef enum logic [2:0] { MOD_EXPO, OPERACAO, AR_EXPO, ARREDONDA, PARA_STATUS } state_t;
 
 state_t current_state;
 
-logic [5:0] expA, expB, exp_result, exp_diff;
-logic [25:0] mantA, mantB, mantA_shifted, mantB_shifted;
-logic [26:0] mant_result_temp;
+logic [5:0] expA, expB;
+logic [5:0] exp_result, exp_diff;
 logic [24:0] mant_result;
+logic [25:0] mantA, mantB;
+logic [25:0] mantA_shifted, mantB_shifted;
+logic [26:0] mant_result_temp;
 logic sinalA, sinalB, sinal_result;
 logic mantA_gt_mantB;
 logic arredondou;
