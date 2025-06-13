@@ -24,7 +24,7 @@ typedef enum logic { EXACT, INEXACT, OVERFLOW, UNDERFLOW } status_out_t;
 typedef enum logic { MOD_EXPO, OPERACAO, AR_EXPO, ARREDONDA, PARA_STATUS } state_t;
 
 state_t current_state;
-
+status_out_t send_status;
 logic [5:0] expA, expB;
 logic [5:0] exp_result, exp_dif;
 
@@ -49,7 +49,7 @@ assign mantB = {1'b1, op_B_in[24:0]};
 always @(posedge clock100KHz or negedge reset) begin
     if (!reset) begin
         current_state <= MOD_EXPO;
-        status_out_t <= EXACT;
+        send_state <= EXACT;
         arredondou <= 1'b0;
         sinal_result <= 1'b0;
         exp_dif <= 6'b0;
@@ -129,13 +129,13 @@ always @(posedge clock100KHz or negedge reset) begin
             PARA_STATUS: begin
                 data_out <= {sinal_result, exp_result, mant_result};
                 if (exp_result > 63) begin
-                    status_out_t <= OVERFLOW;
+                    send_status <= OVERFLOW;
                 end else if (exp_result == 0 && mant_result != 0) begin
-                    status_out_t <= UNDERFLOW;
+                    send_status <= UNDERFLOW;
                 end else if (arredondou) begin
-                    status_out_t <= INEXACT;
+                    send_status <= INEXACT;
                 end else begin
-                    status_out_t <= EXACT;
+                    send_status <= EXACT;
                 end
                 current_state <= MOD_EXPO;
             end
