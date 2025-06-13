@@ -39,13 +39,13 @@ module tb;
     endtask
 
     initial begin
-        reset = 0;
+        reset = 1;
         op_A_in = 32'b0;
         op_B_in = 32'b0;
         #20;
-        reset = 1;
-        #100;
         reset = 0;
+        #100;
+        reset = 1;
         #50;
         // Formato: {sinal, expoente[6], mantissa[25]}
 
