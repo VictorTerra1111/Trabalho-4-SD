@@ -101,15 +101,21 @@ always @(posedge clock100KHz or negedge reset) begin
                 if (mant_result_temp[26]) begin
                     mant_result_temp <= mant_result_temp >> 1;
                     exp_result <= exp_result + 1;
-                end else begin
-                    while (mant_result_temp[25] == 0 && exp_result > 0) begin
-                        mant_result_temp <= mant_result_temp << 1;
-                        exp_result <= exp_result - 1;
-                    end
+                    current_state <= AR_EXPO;  
+                end 
+                
+                else if (mant_result_temp[25] == 0 && exp_result > 0) begin
+                    mant_result_temp <= mant_result_temp << 1;
+                    exp_result <= exp_result - 1;
+                    current_state <= AR_EXPO; 
+                end 
+                
+                else begin
+                    mant_result <= mant_result_temp[24:0];  
+                    current_state <= ARREDONDA;
                 end
-                mant_result <= mant_result_temp[24:0];
-                current_state <= ARREDONDA;
             end
+
 
             ARREDONDA: begin
                 if (mant_result_temp[0]) begin
