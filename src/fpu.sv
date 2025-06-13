@@ -27,7 +27,7 @@ module fpu(
     logic [25:0] mantA, mantB, mantA_shifted, mantB_shifted;
     logic [26:0] mant_result_temp;
     logic sinalA, sinalB, sinal_result;
-    logic arredondou;
+    logic arredondou, bit_overflow;
 
 
     assign sinalA = op_A_in[31];
@@ -42,6 +42,7 @@ module fpu(
         if (!reset) begin
             current_state     <= MOD_EXPO;
             send_status       <= EXACT;
+            bit_overflow      <= 1'b0;
             arredondou        <= 1'b0;
             sinal_result      <= 1'b0;
             exp_dif           <= 6'b0;
@@ -115,7 +116,11 @@ module fpu(
 
                         if (mant_temp == 25'b1000000000000000000000000) begin
                             mant_result <= mant_temp >> 1;
-                            exp_result  <= exp_result + 1;
+                            if (exp_result == 6'd63) begin
+                                bit_overflow <= 1'b1;
+                            end else begin
+                                exp_result <= exp_result + 1;
+                            end
                         end else begin
                             mant_result <= mant_temp;
                         end
@@ -134,7 +139,7 @@ module fpu(
                         data_out <= 32'b0;
                         send_status <= EXACT;
                     end 
-                    else if (exp_result > 6'd63) begin
+                    else if (bit_overflow) begin
                         data_out <= 32'b0;
                         send_status <= OVERFLOW;
                     end 
