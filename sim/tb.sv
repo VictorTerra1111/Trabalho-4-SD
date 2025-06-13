@@ -15,7 +15,7 @@ module tb;
         .clock100KHz(clock100KHz),
         .reset(reset),
         .data_out(data_out),
-        .status_out(status_out), 
+        .status_out(status_out) 
     );
 
     initial clock100KHz = 0;
