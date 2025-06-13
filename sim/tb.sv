@@ -8,7 +8,6 @@ module tb;
     logic reset;
     logic [31:0] data_out;
     logic [3:0] status_out; 
-    logic flags_out;
 
     fpu dut (
         .op_A_in(op_A_in), 
@@ -17,7 +16,6 @@ module tb;
         .reset(reset),
         .data_out(data_out),
         .status_out(status_out), 
-        .flags_out(flags_out)
     );
 
     initial clock100KHz = 0;
