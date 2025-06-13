@@ -36,7 +36,6 @@ logic [25:0] mantA_shifted, mantB_shifted;
 logic [26:0] mant_result_temp;
 
 logic sinalA, sinalB, sinal_result;
-logic mantA_gt_mantB;
 logic arredondou;
 
 assign sinalA = op_A_in[31];
