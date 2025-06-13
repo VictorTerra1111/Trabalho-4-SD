@@ -36,44 +36,44 @@ logic mantA_gt_mantB;
 logic arredondou;
 
 assign sinalA = op_A_in[31];
-assign expA   = op_A_in[30:25];
-assign mantA  = {1'b1, op_A_in[24:0]};
+assign expA = op_A_in[30:25];
+assign mantA = {1'b1, op_A_in[24:0]};
 
 assign sinalB = op_B_in[31];
-assign expB   = op_B_in[30:25];
-assign mantB  = {1'b1, op_B_in[24:0]};
+assign expB = op_B_in[30:25];
+assign mantB = {1'b1, op_B_in[24:0]};
 
 always @(posedge clock100KHz or negedge reset) begin
     if (!reset) begin
-        current_state      <= MOD_EXPO;
-        data_out           <= 32'b0;
-        status_out         <= EXACT;
-        exp_result         <= 6'b0;
-        mantA_shifted      <= 26'b0;
-        mantB_shifted      <= 26'b0;
-        mant_result_temp   <= 27'b0;
-        mant_result        <= 25'b0;
-        sinal_result       <= 1'b0;
-        exp_diff           <= 6'b0;
-        arredondou         <= 1'b0;
+        current_state <= MOD_EXPO;
+        status_out <= EXACT;
+        arredondou <= 1'b0;
+        sinal_result <= 1'b0;
+        exp_diff <= 6'b0;
+        exp_result <= 6'b0;
+        mant_result <= 25'b0;
+        mantA_shifted <= 26'b0;
+        mantB_shifted <= 26'b0;
+        mant_result_temp <= 27'b0;
+        data_out <= 32'b0;
     end else begin
         case (current_state)
             MOD_EXPO: begin
-                arredondou <= 1'b0;  // reset sinal de arredondamento
+                arredondou <= 1'b0; 
                 if (expA > expB) begin
-                    exp_diff         <= expA - expB;
-                    mantB_shifted    <= mantB >> exp_diff;
-                    mantA_shifted    <= mantA;
-                    exp_result       <= expA;
+                    exp_diff <= expA - expB;
+                    mantB_shifted <= mantB >> exp_diff;
+                    mantA_shifted <= mantA;
+                    exp_result <= expA;
                 end else if (expB > expA) begin
-                    exp_diff         <= expB - expA;
-                    mantA_shifted    <= mantA >> exp_diff;
-                    mantB_shifted    <= mantB;
-                    exp_result       <= expB;
+                    exp_diff <= expB - expA;
+                    mantA_shifted <= mantA >> exp_diff;
+                    mantB_shifted <= mantB;
+                    exp_result <= expB;
                 end else begin
-                    mantA_shifted    <= mantA;
-                    mantB_shifted    <= mantB;
-                    exp_result       <= expA;
+                    mantA_shifted <= mantA;
+                    mantB_shifted <= mantB;
+                    exp_result <= expA;
                 end
                 current_state <= OPERACAO;
             end
@@ -81,14 +81,14 @@ always @(posedge clock100KHz or negedge reset) begin
             OPERACAO: begin
                 if (sinalA == sinalB) begin
                     mant_result_temp <= mantA_shifted + mantB_shifted;
-                    sinal_result     <= sinalA;
+                    sinal_result <= sinalA;
                 end else begin
                     if (mantA_shifted >= mantB_shifted) begin
                         mant_result_temp <= mantA_shifted - mantB_shifted;
-                        sinal_result     <= sinalA;
+                        sinal_result <= sinalA;
                     end else begin
                         mant_result_temp <= mantB_shifted - mantA_shifted;
-                        sinal_result     <= sinalB;
+                        sinal_result <= sinalB;
                     end
                 end
                 current_state <= AR_EXPO;
