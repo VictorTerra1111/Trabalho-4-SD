@@ -92,16 +92,17 @@ module fpu(
                     if (mant_result_temp[26]) begin
                         mant_result_temp <= mant_result_temp >> 1;
                         exp_result <= exp_result + 1;
-                        current_state <= AR_EXPO;
+                        current_state <= AR_EXPO; 
                     end else if (mant_result_temp[25] == 0 && exp_result > 0) begin
                         mant_result_temp <= mant_result_temp << 1;
                         exp_result <= exp_result - 1;
                         current_state <= AR_EXPO;
                     end else begin
-                        mant_result <= mant_result_temp[24:0];
+                        mant_result <= mant_result_temp[24:0];  // fatia os 25 bits significativos
                         current_state <= ARREDONDA;
                     end
                 end
+
 
                 ARREDONDA: begin
                     logic [24:0] mant_temp = mant_result;
