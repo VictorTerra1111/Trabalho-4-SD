@@ -25,6 +25,11 @@ initial clk_10KHz = 0;
 always #50 clk_10KHz = ~clk_10KHz;
 
 initial begin
+    reset = 0;
+    #10;
+    reset = 1;
+    #10;
+    reset = 0;
     
     #100;
     $finish;
