@@ -56,7 +56,7 @@ module fpu(
         end else begin
             case (current_state)
                 MOD_EXPO: begin
-                   // arredondou <= 1'b0;
+                    arredondou <= 1'b0;
                     if (expA > expB) begin
                         exp_dif <= expA - expB;
                         mantB_shifted <= (exp_dif > 6'd26) ? 26'b0 : mantB >> exp_dif;
@@ -107,7 +107,7 @@ module fpu(
                 end
 
                 ARREDONDA: begin
-                    mant_temp <= mant_result;
+                    mant_temp = mant_result;
 
                     if (mant_result_temp[0]) begin
                         mant_temp = mant_result + 1;
@@ -128,26 +128,21 @@ module fpu(
 
                 PARA_STATUS: begin
                     data_out <= {sinal_result, exp_result, mant_result};
-                    send_status <= 4'b0;
-                    
+                    send_status <= EXACT;
+
                     if (mant_result == 25'd0 && exp_result == 6'd0) begin
                         data_out <= 32'b0;
                         send_status <= EXACT;
-                    end else begin
-                        data_out <= {sinal_result, exp_result, mant_result};
-                    
-                        if (exp_result > 6'd63) begin
-                            send_status <= send_status | OVERFLOW;
-                        end
-                        if (exp_result == 6'd0 && mant_result != 25'd0) begin
-                            send_status <= send_status | UNDERFLOW;
-                        end
-                        if (arredondou) begin
-                            send_status <= send_status | INEXACT;
-                        end
-                        if (send_status == 4'b0) begin
-                            send_status <= EXACT;
-                        end
+                    end 
+                    else if (exp_result > 6'd63) begin
+                        data_out <= 32'b0;
+                        send_status <= OVERFLOW;
+                    end 
+                    else if (exp_result == 6'd0 && mant_result != 25'd0) begin
+                        send_status <= UNDERFLOW;
+                    end 
+                    else if (arredondou) begin
+                        send_status <= INEXACT;
                     end
 
                     status_out <= send_status;
