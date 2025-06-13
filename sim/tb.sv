@@ -21,8 +21,8 @@ fpu dut (
     .flags_out(flags_out)
 );
 
-initial clk_100KHz = 0;
-always #50 clk_100KHz = ~clk_100KHz;
+initial clock100KHz = 0;
+always #50 clock100KHz = ~clock100KHz;
 
 initial begin
     reset = 0;
