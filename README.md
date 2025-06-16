@@ -1,12 +1,25 @@
-# Aritmética de Ponto Flutuante
+# Aritmética de Ponto Flutuante (FPU)
 João Victor Terra Pereira - Sistemas Digitais 2025/1
+
+## 🖋️ Objetivo
+  O objetivo deste trabalho é implementar uma FPU única e simplificada, personalizada para cada estudante integrante da disciplina. Cada estudante terá um formato de fpu diferente, sendo X o valor do expoente, Y o valor da mantissa e o bit mais significativo o sinal do número.
+  Para determinar o valor de X, utilize a fórmula X = [8 (+/-) ∑b mod 4], onde ∑b representa a soma de todos os dígitos de seu número de matrícula (base 10) e mod 4 representa o resto da divisão inteira por 4. O sinal + ou - é determinado por seu dígito verificador do número de matrícula: + se for ímpar, - se   for par. O valor de Y é dado por Y = 31 - X.
+  
+## 🟰 Cálculo de X e Y
+  Sendo a matrícula 24103806-6, com o dígito verificador 6, o cálculo é:
+  ∑b = 2 + 4 + 1 + 0 + 3 + 8 + 6 + 6 = 30
+  30 % 4 = 2 
+  sinal: 6 (par) -
+  X = 8 - 2 
+  X = 6 bits
+
+  Y = 31 - 6 
+  Y = 25 bits
 
 ## 🧮 Explicação Base FPU
 
+  Uma FPU, assim como outras unidades que fazem parte de um processador, realiza cálculos baseada na formatação de palavras que recebe, operando A e operando B, devolvendo o resultado após o término da operação. Por possuir apenas a operação de adição, esta FPU não possui sinal de operação, baseando-se apenas so sinal de cada número inserido.
 
-## 🖋️ Objetivo
-  O objetivo deste trabalho é implementar uma FPU única e simplificada, personalizada para cada estudante integrante da disciplina. 
-  Para determinar o valor de X, utilize a fórmula X = [8 (+/-) ∑b mod 4], onde ∑b representa a soma de todos os dígitos de seu número de matrícula (base 10) e mod 4 representa o resto da divisão inteira por 4. O sinal + ou - é determinado por seu dígito verificador do número de matrícula: + se for ímpar, - se   for par. O valor de Y é dado por Y = 31 - X.
 
 ## 🤖 Esquemático
 
