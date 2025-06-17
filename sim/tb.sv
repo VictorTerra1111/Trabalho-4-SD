@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-
+// ERRO NO OVERFLOW E INEXACT, UNDERFLOW ESTA OK
 module tb;
 
     logic [31:0] op_A_in; 
