@@ -47,30 +47,27 @@ module tb;
         #100;
         reset = 1;
         #50;
-        // Formato: {sinal, expoente[6], mantissa[25]}
 
-        apply_inputs(32'b00000000000000000000000000000000, 32'b00000000000000000000000000000000, "ZERO + ZERO");
-
+        apply_inputs(32'b0, 32'b0, "+0 + +0");
+        #100;
         apply_inputs({1'b0, 6'd31, 25'd0}, {1'b0, 6'd31, 25'd0}, "+1 + +1");
-
+        #100;
         apply_inputs({1'b0, 6'd31, 25'd0}, {1'b1, 6'd31, 25'd0}, "+1 + -1");
-
+        #100;
         apply_inputs({1'b0, 6'd50, 25'd100}, {1'b0, 6'd10, 25'd100}, "Expoentes muito diferentes");
-
+        #100;
         apply_inputs({1'b0, 6'd31, 25'd5000000}, {1'b0, 6'd31, 25'd1000000}, "Normalização à esquerda");
-
+        #100;
         apply_inputs({1'b0, 6'd31, 25'b0111111111111111111111111}, {1'b0, 6'd31, 25'b0000000000000000000000001}, "Arredondamento");
-
+        #100;
         apply_inputs({1'b0, 6'd63, 25'b1111111111111111111111111}, {1'b0, 6'd63, 25'b1111111111111111111111111}, "Overflow");
-
+        #100;
         apply_inputs({1'b0, 6'd1, 25'd1}, {1'b1, 6'd1, 25'd0}, "Underflow");
-
+        #100;
         apply_inputs({1'b1, 6'd32, 25'd0}, {1'b1, 6'd32, 25'd0}, "-2 + -2");
-
+        #100;
         apply_inputs({1'b0, 6'd33, 25'd0}, {1'b1, 6'd32, 25'd0}, "+4 - (+2)");
-
         #1000;
-        $display("Testbench finalizado.");
         $finish;
     end
 endmodule
