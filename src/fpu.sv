@@ -21,7 +21,7 @@ module fpu(
     
     logic [24:0]  mant_result, mant_temp;
     
-    logic [25:0]  mantA, mantB, mantA_shifted, mantB_shifted;
+    logic [25:0]  mantA, mantB, mantA_deslocada, mantB_deslocada;
     
     logic [26:0]  mant_result_temp;
     
@@ -46,8 +46,8 @@ module fpu(
             exp_result        <= 6'b0;
             mant_result       <= 25'b0;
             mant_temp         <= 25'b0;
-            mantA_shifted     <= 26'b0;
-            mantB_shifted     <= 26'b0;
+            mantA_deslocada   <= 26'b0;
+            mantB_deslocada   <= 26'b0;
             mant_result_temp  <= 27'b0;
             data_out          <= 32'b0;
         end else begin
@@ -59,30 +59,30 @@ module fpu(
                         exp_dif <= expA - expB;
 
                         if (exp_dif > 6'd26) begin
-                            mantB_shifted <= 26'd0;
+                            mantB_deslocada <= 26'd0;
                         end else begin
-                            mantB_shifted <= mantB >> exp_dif;
-                            mantA_shifted <= mantA;
+                            mantB_deslocada <= mantB >> exp_dif;
+                            mantA_deslocada <= mantA;
                             exp_result    <= expA;
                         end
 
-                        mantA_shifted <= mantA;
+                        mantA_deslocada <= mantA;
                         exp_result    <= expA;
                     end 
                     else if (expB > expA) begin
                         exp_dif <= expB - expA;
 
                         if (exp_dif > 6'd26) begin
-                            mantA_shifted <= 26'd0;
+                            mantA_deslocada <= 26'd0;
                         end else begin
-                            mantA_shifted <= mantA >> exp_dif;
-                            mantB_shifted <= mantB;
+                            mantA_deslocada <= mantA >> exp_dif;
+                            mantB_deslocada <= mantB;
                             exp_result    <= expB;
                         end
                     end 
                     else begin
-                        mantA_shifted <= mantA;
-                        mantB_shifted <= mantB;
+                        mantA_deslocada <= mantA;
+                        mantB_deslocada <= mantB;
                         exp_result    <= expA;
                     end
                     current_state <= OPERACAO;
@@ -90,14 +90,14 @@ module fpu(
 
                 OPERACAO: begin
                     if (sinalA == sinalB) begin
-                        mant_result_temp <= mantA_shifted + mantB_shifted;
+                        mant_result_temp <= mantA_deslocada + mantB_deslocada;
                         sinal_result      <= sinalA;
                     end else begin
-                        if (mantA_shifted >= mantB_shifted) begin
-                            mant_result_temp <= mantA_shifted - mantB_shifted;
+                        if (mantA_deslocada >= mantB_deslocada) begin
+                            mant_result_temp <= mantA_deslocada - mantB_deslocada;
                             sinal_result      <= sinalA;
                         end else begin
-                            mant_result_temp <= mantB_shifted - mantA_shifted;
+                            mant_result_temp <= mantB_deslocada - mantA_deslocada;
                             sinal_result      <= sinalB;
                         end
                     end
