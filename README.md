@@ -6,20 +6,16 @@
 ## ✍️ Objetivo
 
 O objetivo deste trabalho é implementar uma FPU única e simplificada, personalizada para cada estudante integrante da disciplina. Cada estudante terá um formato de FPU diferente, sendo X o valor do expoente, Y o valor da mantissa e o bit mais significativo o sinal do número.
-
 Para determinar o valor de X, utiliza-se a fórmula:
 X = [8 (+/-) (∑b mod 4)], onde ∑b representa a soma de todos os dígitos da matrícula (base 10) e mod 4 representa o resto da divisão inteira por 4.
 
 O sinal + ou - é determinado pelo dígito verificador da matrícula:
-
-+ se for ímpar
-
-- se for par
+    + se for ímpar
+    - se for par
 
 O valor de Y é dado por:
-Y = 31 – X
+    Y = 31 – X
 
----
 ## 🟰 Cálculo de X e Y
 
 Sendo a matrícula 24103806-6, com dígito verificador 6, temos:
@@ -45,21 +41,21 @@ Por possuir apenas a operação de adição, esta FPU não possui sinal de opera
 Bits	Campo	Descrição
 
 31:	Sinal	
-   0 = positivo
-   1 = negativo
+    0 = positivo
+    1 = negativo
    
 30 – 25: Expoente	
-   6 bits — valor com bias (bias = 31)
+    6 bits — valor com bias (bias = 31)
    
 24 – 0: Mantissa
-   25 bits — fração (com bit implícito "1")
+    25 bits — fração (com bit implícito "1")
 
-A codificação segue o estilo IEEE-754, com sinal, expoente com bias e mantissa fracionária.
+A codificação segue o estilo IEEE-754, com sinal, expoente e mantissa fracionária.
 
 ---
 ## 🤖 Esquemático
 
-### 🔌 Entradas
+- Entradas
 
 * clock100KHz — Clock de 100 KHz
 
@@ -70,7 +66,7 @@ A codificação segue o estilo IEEE-754, com sinal, expoente com bias e mantissa
 * op_B_in — Operando B (32 bits)
 
 
-### 🔋 Saídas
+- Saídas
 
 * data_out — Representa o resultado da operação, no mesmo formato dos operandos.
 
