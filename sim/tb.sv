@@ -33,7 +33,7 @@ module tb;
             #1000;  
             $display("A: %b", A);
             $display("B: %b", B);
-            $display("Saída: %b", data_out);
+            $display("Saida: %b", data_out);
             $display("Status: %b\n", status_out);
         end
     endtask
@@ -56,17 +56,17 @@ module tb;
         #100;
         apply_inputs({1'b0, 6'd50, 25'd100}, {1'b0, 6'd10, 25'd100}, "expoentes diferentes");
         #100;
-        apply_inputs({1'b0, 6'd31, 25'd5000000}, {1'b0, 6'd31, 25'd1000000}, "Normalização à esquerda");
+        apply_inputs({1'b0, 6'd31, 25'd5000000}, {1'b0, 6'd31, 25'd1000000}, "mudanca de expoente");
         #100;
-        apply_inputs({1'b0, 6'd31, 25'b0111111111111111111111111}, {1'b0, 6'd31, 25'b0000000000000000000000001}, "Arredondamento");
+        apply_inputs({1'b0, 6'd31, 25'b0111111111111111111111111}, {1'b0, 6'd31, 25'b0000000000000000000000001}, "arredondamento");
         #100;
         apply_inputs({1'b0, 6'd63, 25'b1111111111111111111111111}, {1'b0, 6'd63, 25'b1111111111111111111111111}, "Overflow");
         #100;
         apply_inputs({1'b0, 6'd1, 25'd1}, {1'b1, 6'd1, 25'd0}, "Underflow");
         #100;
-        apply_inputs({1'b1, 6'd32, 25'd0}, {1'b1, 6'd32, 25'd0}, "-2 -2");
+        apply_inputs({1'b1, 6'd32, 25'd0}, {1'b1, 6'd32, 25'd0}, "-2 e -2");
         #100;
-        apply_inputs({1'b0, 6'd33, 25'd0}, {1'b1, 6'd32, 25'd0}, "+4 -2");
+        apply_inputs({1'b0, 6'd33, 25'd0}, {1'b1, 6'd32, 25'd0}, "+4 e -2");
         #1000;
         $finish;
     end
