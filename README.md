@@ -55,7 +55,7 @@ A codificação segue o estilo IEEE-754, com sinal, expoente e mantissa fracion�
 ---
 ## 🤖 Esquemático
 
-- Entradas
+### Entradas
 
 * clock100KHz — Clock de 100 KHz
 
@@ -66,7 +66,7 @@ A codificação segue o estilo IEEE-754, com sinal, expoente e mantissa fracion�
 * op_B_in — Operando B (32 bits)
 
 
-- Saídas
+#### Saídas
 
 * data_out — Representa o resultado da operação, no mesmo formato dos operandos.
 
