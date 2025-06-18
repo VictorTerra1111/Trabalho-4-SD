@@ -180,10 +180,8 @@ module fpu(
                     data_out    <= {sinal_result, exp_result, mant_result};
                 
                     if (bit_overflow) begin
-                        data_out   <= 32'd0;
                         status_out <= 4'b0100; // OVERFLOW
-                    end else if (exp_result == 6'd0) begin
-                        data_out   <= 32'd0;
+                    end else if (exp_result == 6'd0 && mant_result != 25'd0) begin
                         status_out <= 4'b1000; // UNDERFLOW
                     end else begin
                         status_out <= 4'b0001; // EXACT
