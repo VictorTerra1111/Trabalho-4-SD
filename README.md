@@ -16,7 +16,6 @@ O sinal + ou - é determinado pelo dígito verificador da matrícula:
 
 - se for par
 
-
 O valor de Y é dado por:
 Y = 31 – X
 
@@ -25,21 +24,20 @@ Y = 31 – X
 
 Sendo a matrícula 24103806-6, com dígito verificador 6, temos:
 
-Soma dos dígitos:
-
-Sinal: 6 (par) → -
-
-Cálculo final:
-
-X = 8 – 2 = 6 bits (expoente)
-
-Y = 31 – 6 = 25 bits (mantissa)
+Somatório dos dígitos: 2 + 4 + 1 + 0 + 3 + 8 + 6 + 6 = 30
+  30 % 4 = 2 
+  
+  Sinal: 6 (par) -
+  X = 8 - 2 
+  
+  X = 6 bits expoente
+  
+  Y = 31 – 6 = 25 bits (mantissa)
 
 ---
 ## 🧮 Explicação base da FPU
 
 Uma FPU, assim como outras unidades que fazem parte de um processador, realiza cálculos baseada na formatação das palavras que recebe, operando A e operando B, devolvendo o resultado após o término da operação.
-
 Por possuir apenas a operação de adição, esta FPU não possui sinal de operação, baseando-se apenas no sinal de cada número inserido.
 
 ## 📦 Estrutura dos operandos (32 bits):
