@@ -67,7 +67,7 @@ module fpu(
                             perdeu_bits   <= (mantB != 26'd0) ? 1'b1 : 1'b0;
                         end else begin
                             mantB_shifted <= mantB >> exp_dif;
-                            perdeu_bits   <= (|mantB[exp_dif-1:0]) ? 1'b1 : 1'b0;
+                            perdeu_bits   <= (mantB[exp_dif-1:0]) ? 1'b1 : 1'b0;
                         end
                         mantA_shifted <= mantA;
                         exp_result    <= expA;
@@ -79,7 +79,7 @@ module fpu(
                             perdeu_bits   <= (mantA != 26'd0) ? 1'b1 : 1'b0;
                         end else begin
                             mantA_shifted <= mantA >> exp_dif;
-                            perdeu_bits   <= (|mantA[exp_dif-1:0]) ? 1'b1 : 1'b0;
+                            perdeu_bits   <= (mantA[exp_dif-1:0]) ? 1'b1 : 1'b0;
                         end
                         mantB_shifted <= mantB;
                         exp_result    <= expB;
@@ -138,10 +138,10 @@ module fpu(
                 end
 
                 ARREDONDA: begin
-                    mant_temp = mant_result;
+                    mant_temp <= mant_result;
 
                     if (mant_result_temp[0]) begin
-                        mant_temp  = mant_result + 1;
+                        mant_temp  <= mant_result + 1;
                         arredondou <= 1'b1;
 
                         if (mant_temp == 25'b1000000000000000000000000) begin
