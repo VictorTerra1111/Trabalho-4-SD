@@ -93,7 +93,7 @@ Maior valor representável:
 ≈ 8.589934592 × 10^9
 
 Menor valor normalizado:
-≈ 4.656612873 × 10^-11
+≈ 4.656612873 × 10^-10
 
 ---
 
