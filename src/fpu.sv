@@ -130,6 +130,7 @@ module fpu(
                 end
 
                 ARREDONDA: begin
+                    /*
                     mant_temp <= mant_result;
 
                     if (mant_result_temp[0]) begin
@@ -154,6 +155,24 @@ module fpu(
                         bit_overflow <= 1'b1;
                     end
 
+                    current_state <= PARA_STATUS;
+                    */
+                    if (mant_result_temp[0]) begin
+                        mant_result <= mant_result + 1;
+                
+                        if (mant_result + 1 == 25'b1000000000000000000000000) begin
+                            mant_result <= (mant_result + 1) >> 1;
+                
+                            if (exp_result == 6'd63) begin
+                                bit_overflow <= 1'b1;
+                            end else begin
+                                exp_result <= exp_result + 1;
+                            end
+                        end else begin
+                            mant_result <= mant_result + 1;
+                        end
+                    end
+                
                     current_state <= PARA_STATUS;
                 end
 
