@@ -70,11 +70,6 @@ module fpu(
                             mantB_shifted <= mantB >> exp_dif;
                             mantA_shifted <= mantA;
                             exp_result    <= expA;
-                            perdeu_bits_temp = 1'b0;
-                            for (int i = 0; i < exp_dif; i++) begin
-                                if (mantB[i]) perdeu_bits_temp = 1'b1;
-                            end
-                            perdeu_bits <= perdeu_bits_temp;
                         end
 
                         mantA_shifted <= mantA;
@@ -90,11 +85,6 @@ module fpu(
                             mantA_shifted <= mantA >> exp_dif;
                             mantB_shifted <= mantB;
                             exp_result    <= expB;
-                            perdeu_bits_temp = 1'b0;
-                            for (int j = 0; j < exp_dif; j++) begin
-                                if (mantA[j]) perdeu_bits_temp = 1'b1;
-                            end
-                            perdeu_bits <= perdeu_bits_temp;
                         end
                     end 
                     else begin
@@ -196,9 +186,6 @@ module fpu(
                         data_out    <= 32'd0;
                         send_status <= UNDERFLOW;
                     end 
-                    else if (arredondou || perdeu_bits) begin
-                        send_status <= INEXACT;
-                    end
 
                     status_out    <= send_status;
                     current_state <= MOD_EXPO;
