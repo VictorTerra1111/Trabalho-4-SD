@@ -61,28 +61,27 @@ A codificação segue o estilo IEEE-754, com sinal, expoente com bias e mantissa
 
 ### 🔌 Entradas
 
-clk100Khz — Clock de 100 KHz
+* clock100KHz — Clock de 100 KHz
 
-reset — Reset assíncrono, ativo em nível baixo (LOW)
+* reset — Reset assíncrono, ativo em nível baixo (LOW)
 
-op_A_in — Operando A (32 bits)
+* op_A_in — Operando A (32 bits)
 
-op_B_in — Operando B (32 bits)
+* op_B_in — Operando B (32 bits)
 
 
 ### 🔋 Saídas
 
-data_out — Representa o resultado da operação, no mesmo formato dos operandos.
+* data_out — Representa o resultado da operação, no mesmo formato dos operandos.
 
-status_out — Vetor de 4 bits no estilo one-hot, indicando o status do resultado:
+* status_out — Vetor de 4 bits no estilo one-hot, indicando o status do resultado:
+   EXACT: O resultado foi representado corretamente, sem arredondamento.
 
-EXACT: O resultado foi representado corretamente, sem arredondamento.
+   OVERFLOW: Resultado maior que o máximo representável.
 
-OVERFLOW: Ocorreu estouro — resultado maior que o máximo representável.
+   UNDERFLOW: Resultado menor que o menor valor representável.
 
-UNDERFLOW: Resultado menor que o menor valor representável (subnormal ou zero).
-
-INEXACT: O resultado sofreu arredondamento, havendo perda de precisão.
+   INEXACT: O resultado foi arredondado.
 
 ---
 
