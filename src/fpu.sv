@@ -28,8 +28,6 @@ module fpu(
     logic         sinalA, sinalB, sinal_result;
     logic         arredondou, bit_overflow, perdeu_bits;
 
-    integer i, j;
-
     assign sinalA = op_A_in[31];
     assign expA   = op_A_in[30:25];
     assign mantA  = {1'b1, op_A_in[24:0]};
@@ -55,8 +53,6 @@ module fpu(
             mant_temp         <= 25'b0;
             data_out          <= 32'b0;
             status_out        <= 4'b0000;
-            i                 <= 0;
-            j                 <= 0;
         end else begin
             case (current_state)
                 MOD_EXPO: begin
@@ -77,7 +73,7 @@ module fpu(
 
                             logic perdeu_bits_temp;
                             perdeu_bits_temp = 1'b0;
-                            for (i; i < exp_dif; i <= i + 1) begin
+                            for (int i = 0; i < exp_dif; i++) begin
                                 if (mantB[i]) perdeu_bits_temp = 1'b1;
                             end
                             perdeu_bits <= perdeu_bits_temp;
@@ -99,7 +95,7 @@ module fpu(
 
                             logic perdeu_bits_temp;
                             perdeu_bits_temp = 1'b0;
-                            for (j; j < exp_dif; j <= j + 1) begin
+                            for (int j = 0; j < exp_dif; j++) begin
                                 if (mantA[j]) perdeu_bits_temp = 1'b1;
                             end
                             perdeu_bits <= perdeu_bits_temp;
