@@ -90,10 +90,11 @@ A codificação segue o estilo IEEE-754, com sinal, expoente com bias e mantissa
 Expoente: De -31 até +32
 
 Maior valor representável:
-≈ 8.589934592 × 10⁹
+≈ 8.589934592 × 10^9
 
 Menor valor normalizado:
-≈ 4.656612873 × 10⁻¹⁰
+≈ 4.656612873 × 10^-11
+
 ---
 
 ## ▶️ Como executar
