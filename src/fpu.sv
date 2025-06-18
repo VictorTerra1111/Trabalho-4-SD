@@ -7,6 +7,7 @@ module fpu(
     output logic [3:0]  status_out
 );
 
+    /*
     typedef enum logic [3:0] { 
         EXACT     = 4'b0001,
         INEXACT   = 4'b0010, 
@@ -15,7 +16,8 @@ module fpu(
     } status_out_t;
 
     status_out_t  send_status;
-
+    */
+    
     typedef enum logic [2:0] { 
         MOD_EXPO, 
         OPERACAO, 
@@ -48,7 +50,7 @@ module fpu(
     always @(posedge clock100KHz or negedge reset) begin
         if (!reset) begin
             current_state     <= MOD_EXPO;
-            send_status       <= EXACT;
+          //  send_status       <= EXACT;
             bit_overflow      <= 1'b0;
             sinal_result      <= 1'b0;
             status_out        <= 4'b0;
@@ -171,26 +173,17 @@ module fpu(
 
                 PARA_STATUS: begin
                     data_out    <= {sinal_result, exp_result, mant_result};
-                    send_status <= 4'b0000;
                 
                     if (bit_overflow) begin
-                        data_out    <= 32'd0;
-                        send_status <= send_status | OVERFLOW;
-                    end 
-                    else if (exp_result == 6'd0) begin
-                        data_out    <= 32'd0;
-                        send_status <= send_status | UNDERFLOW;
-                    end 
-                    else if (mant_result == 25'd0 && exp_result == 6'd0) begin
-                        data_out    <= 32'd0;
-                        send_status <= send_status | EXACT;
-                    end 
-                    else if (send_status == 4'b0000) begin
-                        send_status <= EXACT;
+                        data_out   <= 32'd0;
+                        status_out <= 4'b0100; // OVERFLOW
+                    end else if (exp_result == 6'd0) begin
+                        data_out   <= 32'd0;
+                        status_out <= 4'b1000; // UNDERFLOW
+                    end else begin
+                        status_out <= 4'b0001; // EXACT
                     end
-                
-                    status_out    <= send_status;
-                    current_state <= MOD_EXPO;
+                    current_state  <= MOD_EXPO;
                 end
 
                 default: current_state <= MOD_EXPO;
