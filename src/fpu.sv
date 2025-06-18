@@ -26,7 +26,7 @@ module fpu(
     logic [25:0]  mantA, mantB, mantA_shifted, mantB_shifted;
     logic [26:0]  mant_result_temp;
     logic         sinalA, sinalB, sinal_result;
-    logic         arredondou, bit_overflow, perdeu_bits;
+    logic         arredondou, bit_overflow, perdeu_bits, perdeu_bits_temp;
 
     assign sinalA = op_A_in[31];
     assign expA   = op_A_in[30:25];
@@ -70,8 +70,6 @@ module fpu(
                             mantB_shifted <= mantB >> exp_dif;
                             mantA_shifted <= mantA;
                             exp_result    <= expA;
-
-                            logic perdeu_bits_temp;
                             perdeu_bits_temp = 1'b0;
                             for (int i = 0; i < exp_dif; i++) begin
                                 if (mantB[i]) perdeu_bits_temp = 1'b1;
@@ -92,8 +90,6 @@ module fpu(
                             mantA_shifted <= mantA >> exp_dif;
                             mantB_shifted <= mantB;
                             exp_result    <= expB;
-
-                            logic perdeu_bits_temp;
                             perdeu_bits_temp = 1'b0;
                             for (int j = 0; j < exp_dif; j++) begin
                                 if (mantA[j]) perdeu_bits_temp = 1'b1;
