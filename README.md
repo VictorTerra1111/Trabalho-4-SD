@@ -44,10 +44,15 @@ Por possuir apenas a operação de adição, esta FPU não possui sinal de opera
 
 Bits	Campo	Descrição
 
-31	Sinal	0 = positivo, 1 = negativo
-30 – 25	Expoente	6 bits — valor com bias (bias = 31)
-24 – 0	Mantissa	25 bits — fração (com bit implícito "1")
-
+31:	Sinal	
+   0 = positivo
+   1 = negativo
+   
+30 – 25: Expoente	
+   6 bits — valor com bias (bias = 31)
+   
+24 – 0: Mantissa
+   25 bits — fração (com bit implícito "1")
 
 A codificação segue o estilo IEEE-754, com sinal, expoente com bias e mantissa fracionária.
 
