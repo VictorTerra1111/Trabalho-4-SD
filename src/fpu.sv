@@ -28,6 +28,7 @@ module fpu(
     logic         sinalA, sinalB, sinal_result;
     logic         arredondou, bit_overflow, perdeu_bits;
 
+    // Extração dos campos dos operandos
     assign sinalA = op_A_in[31];
     assign expA   = op_A_in[30:25];
     assign mantA  = {1'b1, op_A_in[24:0]};
@@ -55,6 +56,8 @@ module fpu(
             status_out        <= 4'b0000;
         end else begin
             case (current_state)
+
+                // 🔧 Alinhamento de expoentes e detecção de perda de bits
                 MOD_EXPO: begin
                     arredondou   <= 1'b0;
                     bit_overflow <= 1'b0;
@@ -62,27 +65,44 @@ module fpu(
 
                     if (expA > expB) begin
                         exp_dif <= expA - expB;
+
                         if (exp_dif > 6'd26) begin
                             mantB_shifted <= 26'd0;
-                            perdeu_bits   <= (mantB != 26'd0) ? 1'b1 : 1'b0;
+                            perdeu_bits   <= (mantB != 0);
                         end else begin
                             mantB_shifted <= mantB >> exp_dif;
-                            perdeu_bits   <= (mantB[exp_dif-1:0]) ? 1'b1 : 1'b0;
+                            mantA_shifted <= mantA;
+                            exp_result    <= expA;
+
+                            logic perdeu_bits_temp;
+                            perdeu_bits_temp = 1'b0;
+                            for (int i = 0; i < exp_dif; i++) begin
+                                if (mantB[i]) perdeu_bits_temp = 1'b1;
+                            end
+                            perdeu_bits <= perdeu_bits_temp;
                         end
+
                         mantA_shifted <= mantA;
                         exp_result    <= expA;
                     end 
                     else if (expB > expA) begin
                         exp_dif <= expB - expA;
+
                         if (exp_dif > 6'd26) begin
                             mantA_shifted <= 26'd0;
-                            perdeu_bits   <= (mantA != 26'd0) ? 1'b1 : 1'b0;
+                            perdeu_bits   <= (mantA != 0);
                         end else begin
                             mantA_shifted <= mantA >> exp_dif;
-                            perdeu_bits   <= (mantA[exp_dif-1:0]) ? 1'b1 : 1'b0;
+                            mantB_shifted <= mantB;
+                            exp_result    <= expB;
+
+                            logic perdeu_bits_temp;
+                            perdeu_bits_temp = 1'b0;
+                            for (int i = 0; i < exp_dif; i++) begin
+                                if (mantA[i]) perdeu_bits_temp = 1'b1;
+                            end
+                            perdeu_bits <= perdeu_bits_temp;
                         end
-                        mantB_shifted <= mantB;
-                        exp_result    <= expB;
                     end 
                     else begin
                         mantA_shifted <= mantA;
@@ -94,6 +114,7 @@ module fpu(
                     current_state <= OPERACAO;
                 end
 
+                // ➕ Soma ou subtração de mantissas
                 OPERACAO: begin
                     if (sinalA == sinalB) begin
                         mant_result_temp <= mantA_shifted + mantB_shifted;
@@ -110,6 +131,7 @@ module fpu(
                     current_state <= AR_EXPO;
                 end
 
+                // 🔧 Normalização da mantissa e detecção de overflow/underflow
                 AR_EXPO: begin
                     if (exp_result >= 6'd63) begin
                         bit_overflow     <= 1'b1;
@@ -137,11 +159,12 @@ module fpu(
                     end
                 end
 
+                // 🔧 Arredondamento da mantissa
                 ARREDONDA: begin
-                    mant_temp <= mant_result;
+                    mant_temp = mant_result;
 
                     if (mant_result_temp[0]) begin
-                        mant_temp  <= mant_result + 1;
+                        mant_temp  = mant_result + 1;
                         arredondou <= 1'b1;
 
                         if (mant_temp == 25'b1000000000000000000000000) begin
@@ -167,6 +190,7 @@ module fpu(
                     current_state <= PARA_STATUS;
                 end
 
+                // 🏁 Geração da saída e dos status
                 PARA_STATUS: begin
                     data_out    <= {sinal_result, exp_result, mant_result};
                     send_status <= EXACT;
