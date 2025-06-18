@@ -171,7 +171,7 @@ module fpu(
 
                 PARA_STATUS: begin
                     data_out    <= {sinal_result, exp_result, mant_result};
-                    send_status <= 4'b0;
+                    send_status <= EXACT;
 
                     if (mant_result == 25'd0 && exp_result == 6'd0) begin
                         data_out    <= 32'd0;
