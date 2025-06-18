@@ -21,7 +21,7 @@ module fpu(
     
     logic [24:0]  mant_result, mant_temp;
     
-    logic [25:0]  mantA, mantB, mantA_deslocada, mantB_deslocada;
+    logic [25:0]  mantA, mantB, mantA_shifted, mantB_shifted;
     
     logic [26:0]  mant_result_temp;
     
@@ -46,8 +46,8 @@ module fpu(
             exp_result        <= 6'b0;
             mant_result       <= 25'b0;
             mant_temp         <= 25'b0;
-            mantA_deslocada   <= 26'b0;
-            mantB_deslocada   <= 26'b0;
+            mantA_shifted     <= 26'b0;
+            mantB_shifted     <= 26'b0;
             mant_result_temp  <= 27'b0;
             data_out          <= 32'b0;
         end else begin
@@ -59,30 +59,28 @@ module fpu(
                         exp_dif <= expA - expB;
 
                         if (exp_dif > 6'd26) begin
-                            mantB_deslocada <= 26'd0;
+                            mantB_shifted <= 26'd0;
                         end else begin
-                            mantB_deslocada <= mantB >> exp_dif;
-                            mantA_deslocada <= mantA;
+                            mantB_shifted <= mantB >> exp_dif;
+                            mantA_shifted <= mantA;
                             exp_result    <= expA;
                         end
 
-                        mantA_deslocada <= mantA;
+                        mantA_shifted <= mantA;
                         exp_result    <= expA;
-                    end 
-                    else if (expB > expA) begin
+                    end else if (expB > expA) begin
                         exp_dif <= expB - expA;
 
                         if (exp_dif > 6'd26) begin
-                            mantA_deslocada <= 26'd0;
+                            mantA_shifted <= 26'd0;
                         end else begin
-                            mantA_deslocada <= mantA >> exp_dif;
-                            mantB_deslocada <= mantB;
+                            mantA_shifted <= mantA >> exp_dif;
+                            mantB_shifted <= mantB;
                             exp_result    <= expB;
                         end
-                    end 
-                    else begin
-                        mantA_deslocada <= mantA;
-                        mantB_deslocada <= mantB;
+                    end else begin
+                        mantA_shifted <= mantA;
+                        mantB_shifted <= mantB;
                         exp_result    <= expA;
                     end
                     current_state <= OPERACAO;
@@ -90,15 +88,15 @@ module fpu(
 
                 OPERACAO: begin
                     if (sinalA == sinalB) begin
-                        mant_result_temp <= mantA_deslocada + mantB_deslocada;
-                        sinal_result      <= sinalA;
+                        mant_result_temp <= mantA_shifted + mantB_shifted;
+                        sinal_result     <= sinalA;
                     end else begin
-                        if (mantA_deslocada >= mantB_deslocada) begin
-                            mant_result_temp <= mantA_deslocada - mantB_deslocada;
-                            sinal_result      <= sinalA;
+                        if (mantA_shifted >= mantB_shifted) begin
+                            mant_result_temp <= mantA_shifted - mantB_shifted;
+                            sinal_result     <= sinalA;
                         end else begin
-                            mant_result_temp <= mantB_deslocada - mantA_deslocada;
-                            sinal_result      <= sinalB;
+                            mant_result_temp <= mantB_shifted - mantA_shifted;
+                            sinal_result     <= sinalB;
                         end
                     end
                     current_state <= AR_EXPO;
@@ -163,8 +161,10 @@ module fpu(
                     data_out    <= {sinal_result, exp_result, mant_result};
                 
                     if (bit_overflow) begin
+                        data_out   <= 32'd0;
                         status_out <= 4'b0100; // OVERFLOW
-                    end if (exp_result == 6'd0 && mant_result != 25'd0) begin
+                    end else if (exp_result == 6'd0) begin
+                        data_out   <= 32'd0;
                         status_out <= 4'b1000; // UNDERFLOW
                     end else begin
                         status_out <= 4'b0001; // EXACT
