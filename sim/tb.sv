@@ -23,7 +23,7 @@ module tb;
 
     task automatic apply_inputs(
         input [31:0] A,
-        input [31:0] B,
+        input [31:0] B
     );
         begin
             op_A_in <= A;
