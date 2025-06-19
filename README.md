@@ -88,6 +88,7 @@ Expoente:
 
 Maior valor representável:
     (2 − 2^−25)* 2^32 = 8.589934592x10^9
+
 Menor valor positivo representável:
     1x2^−31 = 4.656612873×10^−10
 
