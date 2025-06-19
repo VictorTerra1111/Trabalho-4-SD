@@ -161,22 +161,22 @@ module fpu(
                     current_state <= PARA_STATUS;
                 end
 
-                PARA_STATUS: begin                
-                    if (bit_overflow) begin
-                        data_out   <= 32'd0;     
-                        status_out <= 4'b0100; // OVERFLOW
-                    end else if (exp_result == 6'd0 && mant_result != 25'd0) begin
+               PARA_STATUS: begin
+                   if (mant_result == 25'd0) begin // deu 0
                         data_out   <= 32'd0;
-                        status_out <= 4'b1000; // UNDERFLOW
-                    end else if (bit_inexact) begin
-                        data_out    <= {sinal_result, exp_result, mant_result};
-                        status_out <= 4'b0010; // INEXACT
-                    end else if (mant_result == 25'd0 && exp_result == 6'b0) begin // expoente zero e mantissa zero
-                        data_out <= 32'd0;
-                        status_out <= 4'b0001; // EXACT
-                    end else begin // outros valores
-                        data_out    <= {sinal_result, exp_result, mant_result};
-                        status_out <= 4'b0001; // EXACT
+                        status_out <= 4'b0001;
+                   end else if (bit_overflow) begin // overflow
+                        data_out   <= 32'd0;
+                        status_out <= 4'b0100;
+                   end else if (exp_result == 6'd0) begin // underflow
+                        data_out   <= 32'd0;
+                        status_out <= 4'b1000;
+                   end else if (bit_inexact) begin // inexact
+                        data_out   <= {sinal_result, exp_result, mant_result};
+                        status_out <= 4'b0010;
+                    end else begin // qualquer outro caso
+                        data_out   <= {sinal_result, exp_result, mant_result};
+                        status_out <= 4'b0001;
                     end
                     current_state  <= MOD_EXPO;
                 end
