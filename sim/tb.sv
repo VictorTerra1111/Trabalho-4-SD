@@ -24,17 +24,11 @@ module tb;
     task automatic apply_inputs(
         input [31:0] A,
         input [31:0] B,
-        input string label
     );
         begin
             op_A_in <= A;
             op_B_in <= B;
-            $display(">>> TESTE: %s", label);
             #1000;  
-            $display("A: %b", A);
-            $display("B: %b", B);
-            $display("Saida: %b", data_out);
-            $display("Status: %b\n", status_out);
         end
     endtask
 
@@ -48,25 +42,25 @@ module tb;
         reset = 1;
         #50;
 
-        apply_inputs(32'b0, 32'b0, "+0 e +0");
+        apply_inputs(32'b0, 32'b0);
         #100;
-        apply_inputs({1'b0, 6'd31, 25'd0}, {1'b0, 6'd31, 25'd0}, "+1 e +1");
+        apply_inputs({1'b0, 6'd31, 25'd0}, {1'b0, 6'd31, 25'd0});
         #100;
-        apply_inputs({1'b0, 6'd31, 25'd0}, {1'b1, 6'd31, 25'd0}, "+1 e -1");
+        apply_inputs({1'b0, 6'd31, 25'd0}, {1'b1, 6'd31, 25'd0});
         #100;
-        apply_inputs({1'b0, 6'd50, 25'd100}, {1'b0, 6'd10, 25'd100}, "expoentes diferentes");
+        apply_inputs({1'b0, 6'd50, 25'd100}, {1'b0, 6'd10, 25'd100});
         #100;
-        apply_inputs({1'b0, 6'd31, 25'd5000000}, {1'b0, 6'd31, 25'd1000000}, "mudanca de expoente");
+        apply_inputs({1'b0, 6'd31, 25'd5000000}, {1'b0, 6'd31, 25'd1000000});
         #100;
-        apply_inputs({1'b0, 6'd31, 25'b0111111111111111111111111}, {1'b0, 6'd31, 25'b0000000000000000000000001}, "arredondamento");
+        apply_inputs({1'b0, 6'd31, 25'b0111111111111111111111111}, {1'b0, 6'd31, 25'b0000000000000000000000001});
         #100;
-        apply_inputs({1'b0, 6'd63, 25'b1111111111111111111111111}, {1'b0, 6'd63, 25'b1111111111111111111111111}, "Overflow");
+        apply_inputs({1'b0, 6'd63, 25'b1111111111111111111111111}, {1'b0, 6'd63, 25'b1111111111111111111111111});
         #100;
-        apply_inputs({1'b0, 6'd1, 25'd1}, {1'b1, 6'd1, 25'd0}, "Underflow");
+        apply_inputs({1'b0, 6'd1, 25'd1}, {1'b1, 6'd1, 25'd0});
         #100;
-        apply_inputs({1'b1, 6'd32, 25'd0}, {1'b1, 6'd32, 25'd0}, "-2 e -2");
+        apply_inputs({1'b1, 6'd32, 25'd0}, {1'b1, 6'd32, 25'd0});
         #100;
-        apply_inputs({1'b0, 6'd33, 25'd0}, {1'b1, 6'd32, 25'd0}, "+4 e -2");
+        apply_inputs({1'b0, 6'd33, 25'd0}, {1'b1, 6'd32, 25'd0});
         #1000;
         $finish;
     end
