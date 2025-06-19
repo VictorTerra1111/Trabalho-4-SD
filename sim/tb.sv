@@ -21,7 +21,7 @@ module tb;
     initial clock100KHz = 0;
     always #5 clock100KHz = ~clock100KHz;
 
-    task automatic apply_inputs(
+    task automatic input_fpu(
         input [31:0] A,
         input [31:0] B
     );
@@ -29,6 +29,11 @@ module tb;
             op_A_in <= A;
             op_B_in <= B;
             #1000;  
+
+            $display("\nA: %b", A);
+            $display("B: %b", B);
+            $display("Saida: %b", data_out);
+            $display("Status: %b", status_out);
         end
     endtask
 
@@ -42,25 +47,27 @@ module tb;
         reset = 1;
         #50;
 
-        apply_inputs(32'b0, 32'b0);
-        #100;
-        apply_inputs({1'b0, 6'd31, 25'd0}, {1'b0, 6'd31, 25'd0});
-        #100;
-        apply_inputs({1'b0, 6'd31, 25'd0}, {1'b1, 6'd31, 25'd0});
-        #100;
-        apply_inputs({1'b0, 6'd50, 25'd100}, {1'b0, 6'd10, 25'd100});
-        #100;
-        apply_inputs({1'b0, 6'd31, 25'd5000000}, {1'b0, 6'd31, 25'd1000000});
-        #100;
-        apply_inputs({1'b0, 6'd31, 25'b0111111111111111111111111}, {1'b0, 6'd31, 25'b0000000000000000000000001});
-        #100;
-        apply_inputs({1'b0, 6'd63, 25'b1111111111111111111111111}, {1'b0, 6'd63, 25'b1111111111111111111111111});
-        #100;
-        apply_inputs({1'b0, 6'd1, 25'd1}, {1'b1, 6'd1, 25'd0});
-        #100;
-        apply_inputs({1'b1, 6'd32, 25'd0}, {1'b1, 6'd32, 25'd0});
-        #100;
-        apply_inputs({1'b0, 6'd33, 25'd0}, {1'b1, 6'd32, 25'd0});
+        input_fpu(32'b0, 32'b0);
+        #1000;
+        input_fpu({1'b0, 6'd31, 25'd0}, {1'b0, 6'd31, 25'd0});
+        #1000;
+        input_fpu({1'b0, 6'd31, 25'd0}, {1'b1, 6'd31, 25'd0});
+        #1000;
+        input_fpu({1'b0, 6'd50, 25'd100}, {1'b0, 6'd10, 25'd100});
+        #1000;
+        input_fpu({1'b0, 6'd31, 25'd5000000}, {1'b0, 6'd31, 25'd1000000});
+        #1000;
+        input_fpu({1'b0, 6'd31, 25'b0111111111111111111111111}, 
+                     {1'b0, 6'd31, 25'b0000000000000000000000001});
+        #1000;
+        input_fpu({1'b0, 6'd63, 25'b1111111111111111111111111}, 
+                     {1'b0, 6'd63, 25'b1111111111111111111111111});
+        #1000;
+        input_fpu({1'b0, 6'd1, 25'd1}, {1'b1, 6'd1, 25'd0});
+        #1000;
+        input_fpu({1'b1, 6'd32, 25'd0}, {1'b1, 6'd32, 25'd0});
+        #1000;
+        input_fpu({1'b0, 6'd33, 25'd0}, {1'b1, 6'd32, 25'd0});
         #1000;
         $finish;
     end
