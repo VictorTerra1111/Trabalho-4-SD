@@ -30,11 +30,11 @@ module fpu(
 
     assign sinalA = op_A_in[31];
     assign expA   = op_A_in[30:25];
-    assign mantA  = {1'b1, op_A_in[24:0]};
+    assign mantA = (expA == 6'd0) ? {1'b0, op_A_in[24:0]} : {1'b1, op_A_in[24:0]};
 
     assign sinalB = op_B_in[31];
     assign expB   = op_B_in[30:25];
-    assign mantB  = {1'b1, op_B_in[24:0]};
+    assign mantB = (expB == 6'd0) ? {1'b0, op_B_in[24:0]} : {1'b1, op_B_in[24:0]};
     
     always @(posedge clock100KHz or negedge reset) begin
         if (!reset) begin
@@ -54,49 +54,55 @@ module fpu(
         end else begin
             case (current_state)
                 MOD_EXPO: begin
-                    bit_overflow <= 1'b0;
-                    bit_inexact <= 1'b0;
-                    bit_underflow <= 1'b0;
-                    
-                    if (expA > expB) begin // se expoente A for maior que B
-                        exp_dif <= expA - expB; // diferenca de expoentes
-
-                        if (exp_dif > 6'd26) begin
-                            mantB_shifted <= 26'd0;
-                            if (mantB != 0) bit_inexact <= 1'b1; 
-                        end else begin
-                            mantB_shifted <= mantB >> exp_dif; // shifta B
+                    if (op_A_in == 32'd0 && op_B_in == 32'd0) begin
+                        data_out     <= 32'd0;
+                        status_out   <= 4'b0001;
+                        current_state <= MOD_EXPO;
+                    end else begin
+                        bit_overflow <= 1'b0;
+                        bit_inexact <= 1'b0;
+                        bit_underflow <= 1'b0;
+                        
+                        if (expA > expB) begin // se expoente A for maior que B
+                            exp_dif <= expA - expB; // diferenca de expoentes
+    
+                            if (exp_dif > 6'd26) begin
+                                mantB_shifted <= 26'd0;
+                                if (mantB != 0) bit_inexact <= 1'b1; 
+                            end else begin
+                                mantB_shifted <= mantB >> exp_dif; // shifta B
+                                mantA_shifted <= mantA;
+                                exp_result    <= expA;
+                                 
+                               for (int i = 0; i < exp_dif; i++) begin
+                                   if (mantB[i]) bit_inexact <= 1'b1; // verifica se algum bit vai ser perdido
+                               end
+                            end
+    
                             mantA_shifted <= mantA;
                             exp_result    <= expA;
-                             
-                           for (int i = 0; i < exp_dif; i++) begin
-                               if (mantB[i]) bit_inexact <= 1'b1; // verifica se algum bit vai ser perdido
-                           end
-                        end
-
-                        mantA_shifted <= mantA;
-                        exp_result    <= expA;
-                    end else if (expB > expA) begin // se expoente B for maior que A
-                        exp_dif <= expB - expA; // diferenca de expoentes
-
-                        if (exp_dif > 6'd26) begin
-                            mantA_shifted <= 26'd0;
-                            if (mantA != 0) bit_inexact <= 1'b1; 
-                        end else begin
-                            mantA_shifted <= mantA >> exp_dif; // shifta A
+                        end else if (expB > expA) begin // se expoente B for maior que A
+                            exp_dif <= expB - expA; // diferenca de expoentes
+    
+                            if (exp_dif > 6'd26) begin
+                                mantA_shifted <= 26'd0;
+                                if (mantA != 0) bit_inexact <= 1'b1; 
+                            end else begin
+                                mantA_shifted <= mantA >> exp_dif; // shifta A
+                                mantB_shifted <= mantB;
+                                exp_result    <= expB;
+                                
+                               for (int i = 0; i < exp_dif; i++) begin
+                                   if (mantA[i]) bit_inexact <= 1'b1; // verifica se algum bit vai ser perdido
+                               end
+                            end
+                        end else begin // se expoentes forem iguais
+                            mantA_shifted <= mantA;
                             mantB_shifted <= mantB;
-                            exp_result    <= expB;
-                            
-                           for (int i = 0; i < exp_dif; i++) begin
-                               if (mantA[i]) bit_inexact <= 1'b1; // verifica se algum bit vai ser perdido
-                           end
+                            exp_result    <= expA;
                         end
-                    end else begin // se expoentes forem iguais
-                        mantA_shifted <= mantA;
-                        mantB_shifted <= mantB;
-                        exp_result    <= expA;
+                        current_state <= OPERACAO;
                     end
-                    current_state <= OPERACAO;
                 end
 
                 OPERACAO: begin
