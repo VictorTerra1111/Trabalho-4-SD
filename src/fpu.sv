@@ -161,16 +161,21 @@ module fpu(
                     current_state <= PARA_STATUS;
                 end
 
-                PARA_STATUS: begin
-                    data_out    <= {sinal_result, exp_result, mant_result};
-                
+                PARA_STATUS: begin                
                     if (bit_overflow) begin
+                        data_out    <= {sinal_result, exp_result, mant_result};
                         status_out <= 4'b0100; // OVERFLOW
                     end else if (exp_result == 6'd0 && mant_result != 25'd0) begin
+                        data_out    <= {sinal_result, exp_result, mant_result};
                         status_out <= 4'b1000; // UNDERFLOW
                     end else if (bit_inexact) begin
-                        status_out <= 4'b0010;
+                        data_out    <= {sinal_result, exp_result, mant_result};
+                        status_out <= 4'b0010; // INEXACT
+                    end else if (mant_result == 25'd0) begin
+                        data_out <= 32'd0;     // tudo zerado
+                        status_out <= 4'b0001; // EXACT
                     end else begin
+                        data_out    <= {sinal_result, exp_result, mant_result};
                         status_out <= 4'b0001; // EXACT
                     end
                     current_state  <= MOD_EXPO;
