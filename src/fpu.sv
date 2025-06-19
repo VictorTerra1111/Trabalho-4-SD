@@ -26,7 +26,7 @@ module fpu(
     logic [26:0]  mant_result_temp;
     
     logic         sinalA, sinalB, sinal_result;
-    logic         bit_overflow;
+    logic         bit_overflow, bit_inexact;
 
     assign sinalA = op_A_in[31];
     assign expA   = op_A_in[30:25];
@@ -39,6 +39,7 @@ module fpu(
     always @(posedge clock100KHz or negedge reset) begin
         if (!reset) begin
             current_state     <= MOD_EXPO;
+            bit_inexact       <= 1'b0;
             bit_overflow      <= 1'b0;
             sinal_result      <= 1'b0;
             status_out        <= 4'b0;
@@ -53,12 +54,14 @@ module fpu(
             case (current_state)
                 MOD_EXPO: begin
                     bit_overflow <= 1'b0;
+                    bit_inexact <= 1'b0;
 
                     if (expA > expB) begin
                         exp_dif <= expA - expB;
 
                         if (exp_dif > 6'd26) begin
                             mantB_shifted <= 26'd0;
+                            if (mantB != 0) bit_inexact <= 1'b1; 
                         end else begin
                             mantB_shifted <= mantB >> exp_dif;
                             mantA_shifted <= mantA;
@@ -130,6 +133,7 @@ module fpu(
 
                 ARREDONDA: begin
                     if (mant_result_temp[0]) begin
+                        bit_inexact <= 1'b1;
                         mant_result <= mant_result + 1;
                 
                         if (mant_result + 1 == 25'b1000000000000000000000000) begin
@@ -155,6 +159,8 @@ module fpu(
                         status_out <= 4'b0100; // OVERFLOW
                     end else if (exp_result == 6'd0 && mant_result != 25'd0) begin
                         status_out <= 4'b1000; // UNDERFLOW
+                    end else if (bit_inexact) begin
+                        status_out <= 4'b0010;
                     end else begin
                         status_out <= 4'b0001; // EXACT
                     end
