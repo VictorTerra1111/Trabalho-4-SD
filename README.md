@@ -83,18 +83,27 @@ A codificação segue o estilo IEEE-754, com sinal, expoente e mantissa fracion�
 
 ## 📏 Faixa representada
 
-Expoente: De -31 até +32
+Expoente:
+-31 (000000) até +32 (111111)
 
 Maior valor representável:
-≈ 8.589934592 × 10^9
+    (2 − 2^−25)* 2^32 = 8.589934592x10^9
+Menor valor positivo representável:
+    1x2^−31 = 4.656612873×10^−10
 
-Menor valor normalizado:
-≈ 4.656612873 × 10^-10
+| Condição      | Expoente (bin)   | Expoente (dec)| Mantissa | Valor                                   |
+| ------------- | ---------------- | ------------- | -------- | --------------------------------------- |
+| Zero          | 000000           | -31           | 000...0  | 0                                       |
+| Normalizado   | 000001–111110    | -30 a +31     | x        | (1 + mantissa) × 2^(expoente-31)        |
+| Maior número  | 111110           | +31           | 111...1  | (2 - 2^-25) × 2^31                      |
+| Overflow      | 111111           | +32           | 000...0  | Indica Overflow (sen número real)       |
+
+![image](https://github.com/user-attachments/assets/2baa0ad8-8ffe-4265-9a5f-86aa1e0f3b6d)
 
 ---
 
 ## ▶️ Como executar
 1. Inicie o Questa e entre na pasta 'sim'.
 
-2. Execute o comando no terminal do simulador:
+2. Execute o comando no terminal:
 do sim.do
