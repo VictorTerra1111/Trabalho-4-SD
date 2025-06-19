@@ -26,7 +26,7 @@ module fpu(
     logic [26:0]  mant_result_temp;
     
     logic         sinalA, sinalB, sinal_result;
-    logic         bit_overflow, bit_inexact;
+    logic         bit_overflow, bit_inexact, bit_underflow;
 
     assign sinalA = op_A_in[31];
     assign expA   = op_A_in[30:25];
@@ -41,6 +41,7 @@ module fpu(
             current_state     <= MOD_EXPO;
             bit_inexact       <= 1'b0;
             bit_overflow      <= 1'b0;
+            bit_underflow     <= 1'b0;
             sinal_result      <= 1'b0;
             status_out        <= 4'b0;
             exp_dif           <= 6'b0;
@@ -55,7 +56,8 @@ module fpu(
                 MOD_EXPO: begin
                     bit_overflow <= 1'b0;
                     bit_inexact <= 1'b0;
-
+                    bit_underflow <= 1'b0;
+                    
                     if (expA > expB) begin // se expoente A for maior que B
                         exp_dif <= expA - expB; // diferenca de expoentes
 
@@ -127,6 +129,7 @@ module fpu(
                     else if (mant_result_temp[25] == 0) begin
                         if (exp_result == 6'd0) begin
                             mant_result_temp <= 27'd0;
+                            bit_underflow    <= 1'b1;
                             current_state    <= PARA_STATUS;
                         end else begin
                             mant_result_temp <= mant_result_temp << 1;
@@ -161,20 +164,17 @@ module fpu(
                     current_state <= PARA_STATUS;
                 end
 
-               PARA_STATUS: begin
-                   if (mant_result == 25'd0) begin // deu 0
-                        data_out   <= 32'd0;
-                        status_out <= 4'b0001;
+               PARA_STATUS: begin                   
+                   if (bit_inexact) begin // inexact
+                       data_out <= 32'b0;
+                       status_out <= 4'b0010;
                    end else if (bit_overflow) begin // overflow
-                        data_out   <= 32'd0;
-                        status_out <= 4'b0100;
-                   end else if (exp_result == 6'd0) begin // underflow
-                        data_out   <= 32'd0;
-                        status_out <= 4'b1000;
-                   end else if (bit_inexact) begin // inexact
-                        data_out   <= {sinal_result, exp_result, mant_result};
-                        status_out <= 4'b0010;
-                    end else begin // qualquer outro caso
+                       data_out <= 32'b0;
+                       status_out <= 4'b0100;
+                   end else if(bit_underflow) begin // underflow
+                       data_out <= 32'b0;
+                       status_out <= 4'b1000;
+                    end else begin // exact
                         data_out   <= {sinal_result, exp_result, mant_result};
                         status_out <= 4'b0001;
                     end
