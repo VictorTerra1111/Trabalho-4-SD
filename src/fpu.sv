@@ -67,7 +67,9 @@ module fpu(
                             mantA_shifted <= mantA;
                             exp_result    <= expA;
                              
-                            if (|mantB[exp_dif-1:0]) bit_inexact <= 1'b1;
+                            if (exp_dif != 0) begin
+                                if (|mantB[exp_dif-1:0]) bit_inexact <= 1'b1;
+                            end
                         end
 
                         mantA_shifted <= mantA;
@@ -82,7 +84,10 @@ module fpu(
                             mantB_shifted <= mantB;
                             exp_result    <= expB;
                             
-                            if (|mantA[exp_dif-1:0]) bit_inexact <= 1'b1;
+                            if (exp_dif != 0) begin
+                                if (|mantA[exp_dif-1:0]) bit_inexact <= 1'b1;
+                            end
+
                         end
                     end else begin
                         mantA_shifted <= mantA;
