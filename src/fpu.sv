@@ -116,17 +116,19 @@ module fpu(
                 end
 
                 AR_EXPO: begin
-                    if (exp_result >= 6'd63) begin
+                    if (mant_result_temp == 27'd0) begin
+                        mant_result <= 25'd0;
+                        exp_result  <= 6'd0;
+                        current_state <= PARA_STATUS;
+                    end else if (exp_result >= 6'd63) begin
                         bit_overflow     <= 1'b1;
                         mant_result_temp <= 27'd0;
                         current_state    <= PARA_STATUS;
-                    end 
-                    else if (mant_result_temp[26]) begin
+                    end else if (mant_result_temp[26]) begin
                         mant_result_temp <= mant_result_temp >> 1;
                         exp_result       <= exp_result + 1;
                         current_state    <= AR_EXPO;
-                    end 
-                    else if (mant_result_temp[25] == 0) begin
+                    end else if (mant_result_temp[25] == 0) begin
                         if (exp_result == 6'd0) begin
                             mant_result_temp <= 27'd0;
                             bit_underflow    <= 1'b1;
@@ -136,10 +138,9 @@ module fpu(
                             exp_result       <= exp_result - 1;
                             current_state    <= AR_EXPO;
                         end
-                    end 
-                    else begin
-                        mant_result    <= mant_result_temp[24:0];
-                        current_state  <= ARREDONDA;
+                    end else begin
+                        mant_result   <= mant_result_temp[24:0];
+                        current_state <= ARREDONDA;
                     end
                 end
 
@@ -164,19 +165,21 @@ module fpu(
                     current_state <= PARA_STATUS;
                 end
 
-               PARA_STATUS: begin                   
-                   if (bit_inexact) begin // inexact
-                       data_out <= 32'b0;
-                       status_out <= 4'b0010;
-                   end else if (bit_overflow) begin // overflow
-                       data_out <= 32'b0;
-                       status_out <= 4'b0100;
-                   end else if(bit_underflow) begin // underflow
-                       data_out <= 32'b0;
-                       status_out <= 4'b1000;
-                    end else begin // exact
+              PARA_STATUS: begin                   
+                    if (bit_overflow) begin
+                        data_out   <= 32'd0;
+                        status_out <= 4'b0100;
+                    end 
+                    else if (bit_underflow) begin
+                        data_out   <= 32'd0;
+                        status_out <= 4'b1000;
+                    end 
+                    else begin
                         data_out   <= {sinal_result, exp_result, mant_result};
-                        status_out <= 4'b0001;
+                        if (bit_inexact)
+                            status_out <= 4'b0010;
+                        else
+                            status_out <= 4'b0001;
                     end
                     current_state  <= MOD_EXPO;
                 end
