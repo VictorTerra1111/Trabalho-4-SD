@@ -19,7 +19,7 @@ module fpu(
 
     logic [5:0]   expA, expB, exp_result, exp_dif;
     
-    logic [24:0]  mant_result, mant_temp;
+    logic [24:0]  mant_result;
     
     logic [25:0]  mantA, mantB, mantA_shifted, mantB_shifted;
     
@@ -45,7 +45,6 @@ module fpu(
             exp_dif           <= 6'b0;
             exp_result        <= 6'b0;
             mant_result       <= 25'b0;
-            mant_temp         <= 25'b0;
             mantA_shifted     <= 26'b0;
             mantB_shifted     <= 26'b0;
             mant_result_temp  <= 27'b0;
@@ -130,33 +129,6 @@ module fpu(
                 end
 
                 ARREDONDA: begin
-                    /*
-                    mant_temp <= mant_result;
-
-                    if (mant_result_temp[0]) begin
-                        mant_temp  <= mant_result + 1;
-
-                        if (mant_temp == 25'b1000000000000000000000000) begin
-                            mant_result <= mant_temp >> 1;
-                            if (exp_result == 6'd63) begin
-                                bit_overflow <= 1'b1;
-                            end else begin
-                                exp_result <= exp_result + 1;
-                            end
-                        end else begin
-                            mant_result <= mant_temp;
-                        end
-                    end 
-                    else begin
-                        mant_result <= mant_result;
-                    end
-
-                    if (exp_result >= 6'd63) begin
-                        bit_overflow <= 1'b1;
-                    end
-
-                    current_state <= PARA_STATUS;
-                    */
                     if (mant_result_temp[0]) begin
                         mant_result <= mant_result + 1;
                 
