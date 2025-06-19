@@ -81,10 +81,10 @@ module fpu(
                                     if (mantB[i]) bit_inexact <= 1'b1;
                                 end
                             end
-
+/*
                             mantA_shifted <= mantA;
                             exp_result    <= expA;
-
+*/
                         end else if (expB > expA) begin
                             exp_dif <= expB - expA;
 
@@ -196,7 +196,6 @@ module fpu(
                     current_state <= MOD_EXPO;
                 end
 
-                default: current_state <= MOD_EXPO;
             endcase
         end
     end
