@@ -1,4 +1,4 @@
-# 🧠 Aritmética de Ponto Flutuante (FPU)
+# Aritmética de Ponto Flutuante (FPU)
 
     João Victor Terra Pereira — Sistemas Digitais 2025/1
 
