@@ -108,3 +108,8 @@ Menor valor positivo representável:
 
 2. Execute o comando no terminal:
 do sim.do
+
+## Exemplo de Simulação
+
+![image](https://github.com/user-attachments/assets/6d49db9d-bfac-49a8-af15-7a9c4b6bd50d)
+
