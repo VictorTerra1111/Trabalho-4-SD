@@ -18,9 +18,9 @@ O valor de Y é dado por:
 
 ## 🟰 Cálculo de X e Y
 
-Sendo a matrícula 24103806-6, com dígito verificador 6, temos:
+Sendo a matrícula 24103815-6, com dígito verificador 6, temos:
 
-Somatório dos dígitos: 2 + 4 + 1 + 0 + 3 + 8 + 6 + 6 = 30
+Somatório dos dígitos: 2 + 4 + 1 + 0 + 3 + 8 + 1 + 5 + 6 = 30
   30 % 4 = 2 
   
   Sinal: 6 (par) -
